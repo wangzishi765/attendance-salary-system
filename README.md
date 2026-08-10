@@ -20,16 +20,53 @@
 
 | 员工管理 | 工资单 |
 | :---: | :---: |
-| ![员工管理](docs/screenshots/03-employee.png) | ![工资单](docs/screenshots/05-payroll.png) |
+| ![员工管理](docs/screenshots/03-employee.png) | ![工资单](docs/screenshots/08-payroll.png) |
 
 | 考勤管理（列表） | 考勤管理（月历） |
 | :---: | :---: |
-| ![考勤列表](docs/screenshots/04-attendance.png) | ![考勤月历](docs/screenshots/07-attendance-calendar.png) |
+| ![考勤列表](docs/screenshots/05-attendance.png) | ![考勤月历](docs/screenshots/10-attendance-calendar.png) |
 
-| 薪资规则 | 部门管理 |
+| 部门管理 | 薪资规则 |
 | :---: | :---: |
-| ![薪资规则](docs/screenshots/06-salary-rule.png) | 部门树状结构 |
+| ![部门管理](docs/screenshots/04-department.png) | ![薪资规则](docs/screenshots/09-salary-rule.png) |
 
+| 请假管理 | 加班管理 |
+| :---: | :---: |
+| ![请假管理](docs/screenshots/06-leave.png) | ![加班管理](docs/screenshots/07-overtime.png) |
+
+
+---
+
+## 📝 更新日志
+
+### v1.3.0 - 2026-08-11
+**界面美化与全局样式统一**
+- 🎨 全新紫色主题设计，登录页渐变背景 + 装饰元素
+- 📊 仪表盘优化：渐变色统计卡片 + ECharts 紫色主题图表
+- 🔧 全局样式统一：卡片、表格、按钮、对话框、分页风格一致
+- 👤 主布局优化：顶部栏页面标题 + 渐变色用户头像 + 角色标签
+- 📱 左侧菜单美化：选中项渐变背景 + 阴影效果
+- 💾 所有按钮渐变色 + hover 上浮动效
+
+### v1.2.0 - 2026-08-10
+**功能增强**
+- 📅 新增考勤月历视图，直观查看每月考勤状态
+- 📊 首页新增 ECharts 统计图表（部门人数分布 / 工资柱状图）
+- 🔐 新增修改密码功能
+- 📤 工资单支持 Excel 导出
+- 👥 新增 HR 人事专员角色，细化权限控制
+- 🌳 部门管理支持树状结构 + 人数统计
+- 📥 员工/考勤支持 Excel 批量导入
+
+### v1.1.0 - 2026-08-09
+**基础功能完善**
+- ✅ 员工管理 CRUD
+- ✅ 部门管理
+- ✅ 考勤打卡与统计
+- ✅ 请假/加班申请与审批
+- ✅ 薪资规则配置
+- ✅ 工资自动核算
+- ✅ JWT 登录鉴权 + 三级角色
 
 ---
 
