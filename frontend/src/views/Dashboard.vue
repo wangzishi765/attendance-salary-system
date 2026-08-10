@@ -84,17 +84,17 @@ const currentMonth = () => {
 const cards = computed(() => {
   if (userStore.isAdminOrHr) {
     return [
-      { label: '员工总数', value: stat.employeeCount, icon: 'User', color: '#1890ff' },
-      { label: '部门数', value: stat.departmentCount, icon: 'OfficeBuilding', color: '#52c41a' },
-      { label: '今日出勤', value: stat.todayAttendance, icon: 'Clock', color: '#faad14' },
-      { label: '待审批请假', value: stat.pendingLeave, icon: 'Calendar', color: '#f5222d' }
+      { label: '员工总数', value: stat.employeeCount, icon: 'User', color: 'linear-gradient(135deg, #667eea, #764ba2)' },
+      { label: '部门数', value: stat.departmentCount, icon: 'OfficeBuilding', color: 'linear-gradient(135deg, #11998e, #38ef7d)' },
+      { label: '今日出勤', value: stat.todayAttendance, icon: 'Clock', color: 'linear-gradient(135deg, #f093fb, #f5576c)' },
+      { label: '待审批请假', value: stat.pendingLeave, icon: 'Calendar', color: 'linear-gradient(135deg, #4facfe, #00f2fe)' }
     ]
   }
   return [
-    { label: '本月出勤', value: empStat.total, icon: 'Clock', color: '#1890ff' },
-    { label: '正常', value: empStat.normal, icon: 'CircleCheck', color: '#52c41a' },
-    { label: '迟到', value: empStat.late, icon: 'Warning', color: '#faad14' },
-    { label: '缺勤', value: empStat.absent, icon: 'CircleClose', color: '#f5222d' }
+    { label: '本月出勤', value: empStat.total, icon: 'Clock', color: 'linear-gradient(135deg, #667eea, #764ba2)' },
+    { label: '正常', value: empStat.normal, icon: 'CircleCheck', color: 'linear-gradient(135deg, #11998e, #38ef7d)' },
+    { label: '迟到', value: empStat.late, icon: 'Warning', color: 'linear-gradient(135deg, #f093fb, #f5576c)' },
+    { label: '缺勤', value: empStat.absent, icon: 'CircleClose', color: 'linear-gradient(135deg, #4facfe, #00f2fe)' }
   ]
 })
 
@@ -119,10 +119,11 @@ const renderPie = (data) => {
   pieChart.setOption({
     tooltip: { trigger: 'item' },
     legend: { bottom: 0 },
-    color: ['#1890ff', '#52c41a', '#faad14', '#f5222d', '#722ed1', '#13c2c2'],
+    color: ['#667eea', '#11998e', '#f093fb', '#4facfe', '#fc6076', '#ffd26f'],
     series: [{
       type: 'pie', radius: ['40%', '68%'], center: ['50%', '45%'],
       label: { formatter: '{b}: {c}' },
+      itemStyle: { borderRadius: 6, borderColor: '#fff', borderWidth: 2 },
       data
     }]
   })
@@ -132,12 +133,18 @@ const renderBar = (names, values, unit) => {
   if (!barChart) barChart = echarts.init(barRef.value)
   barChart.setOption({
     tooltip: { trigger: 'axis' },
-    grid: { left: 40, right: 20, top: 20, bottom: 30 },
-    xAxis: { type: 'category', data: names },
-    yAxis: { type: 'value', name: unit },
+    grid: { left: 50, right: 20, top: 20, bottom: 30 },
+    xAxis: { type: 'category', data: names, axisLine: { lineStyle: { color: '#ddd' } } },
+    yAxis: { type: 'value', name: unit, axisLine: { show: false }, splitLine: { lineStyle: { color: '#f0f0f0' } } },
     series: [{
       type: 'bar', data: values, barWidth: '45%',
-      itemStyle: { color: '#1890ff', borderRadius: [4, 4, 0, 0] }
+      itemStyle: {
+        borderRadius: [6, 6, 0, 0],
+        color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+          { offset: 0, color: '#667eea' },
+          { offset: 1, color: '#764ba2' }
+        ])
+      }
     }]
   })
 }
@@ -198,17 +205,95 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
-.clock-card { margin-bottom: 16px; background: linear-gradient(135deg, #e6f7ff, #ffffff); }
-.clock-content { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px; }
-.clock-time { font-size: 40px; font-weight: bold; color: #1890ff; }
-.clock-date { color: #666; }
-.clock-status p { margin: 6px 0; color: #555; }
-.clock-btns { display: flex; gap: 12px; }
-.stat-row { margin-bottom: 16px; }
-.stat-card { margin-bottom: 16px; }
-.stat-card :deep(.el-card__body) { display: flex; align-items: center; gap: 14px; }
-.stat-icon { width: 54px; height: 54px; border-radius: 10px; display: flex; align-items: center; justify-content: center; color: #fff; }
-.stat-value { font-size: 26px; font-weight: bold; }
-.stat-label { color: #999; font-size: 13px; }
-.chart { height: 300px; width: 100%; }
+.clock-card {
+  margin-bottom: 20px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border: none;
+  border-radius: 12px;
+}
+.clock-card :deep(.el-card__body) {
+  padding: 24px;
+}
+.clock-content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+.clock-time {
+  font-size: 42px;
+  font-weight: bold;
+  color: #fff;
+}
+.clock-date {
+  color: rgba(255, 255, 255, 0.85);
+  margin-top: 4px;
+}
+.clock-status p {
+  margin: 6px 0;
+  color: rgba(255, 255, 255, 0.9);
+}
+.clock-btns {
+  display: flex;
+  gap: 12px;
+}
+.clock-btns :deep(.el-button) {
+  border-radius: 20px;
+  padding: 0 24px;
+}
+.stat-row {
+  margin-bottom: 20px;
+}
+.stat-card {
+  margin-bottom: 20px;
+  border: none;
+  border-radius: 12px;
+  transition: all 0.3s;
+}
+.stat-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+}
+.stat-card :deep(.el-card__body) {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 20px;
+}
+.stat-icon {
+  width: 56px;
+  height: 56px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+.stat-value {
+  font-size: 28px;
+  font-weight: 700;
+  color: #1a1a2e;
+  line-height: 1.2;
+}
+.stat-label {
+  color: #888;
+  font-size: 14px;
+  margin-top: 4px;
+}
+.chart {
+  height: 320px;
+  width: 100%;
+}
+:deep(.el-card) {
+  border-radius: 12px;
+  border: none;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+}
+:deep(.el-card__header) {
+  border-bottom: 1px solid #f0f0f0;
+  font-weight: 600;
+  color: #333;
+}
 </style>

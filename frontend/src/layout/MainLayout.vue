@@ -26,21 +26,31 @@
     <el-container>
       <el-header class="header">
         <div class="header-left">
-          <el-tag :type="userStore.isAdmin ? 'danger' : 'success'" effect="dark">
-            {{ userStore.isAdmin ? '管理员' : '员工' }}
-          </el-tag>
+          <el-icon class="collapse-icon"><Menu /></el-icon>
+          <span class="page-title">{{ currentPageTitle }}</span>
         </div>
         <div class="header-right">
+          <el-tag :type="userStore.isAdmin ? 'danger' : (userStore.isHr ? 'warning' : 'success')" effect="light" round>
+            {{ userStore.isAdmin ? '管理员' : (userStore.isHr ? '人事专员' : '普通员工') }}
+          </el-tag>
           <el-dropdown @command="handleCommand">
             <span class="user-info">
-              <el-icon><UserFilled /></el-icon>
-              {{ userStore.realName || userStore.username }}
+              <el-avatar :size="32" style="background: linear-gradient(135deg, #667eea, #764ba2)">
+                <el-icon><UserFilled /></el-icon>
+              </el-avatar>
+              <span class="user-name">{{ userStore.realName || userStore.username }}</span>
               <el-icon><ArrowDown /></el-icon>
             </span>
             <template #dropdown>
               <el-dropdown-menu>
-                <el-dropdown-item command="password">修改密码</el-dropdown-item>
-                <el-dropdown-item command="logout" divided>退出登录</el-dropdown-item>
+                <el-dropdown-item command="password">
+                  <el-icon><Key /></el-icon>
+                  修改密码
+                </el-dropdown-item>
+                <el-dropdown-item command="logout" divided>
+                  <el-icon><SwitchButton /></el-icon>
+                  退出登录
+                </el-dropdown-item>
               </el-dropdown-menu>
             </template>
           </el-dropdown>
@@ -83,12 +93,24 @@ import { useRoute, useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { useUserStore } from '@/store/user'
 import { changePassword } from '@/api'
+import {
+  Coordinate,
+  UserFilled,
+  ArrowDown,
+  Menu,
+  Key,
+  SwitchButton
+} from '@element-plus/icons-vue'
 
 const route = useRoute()
 const router = useRouter()
 const userStore = useUserStore()
 
 const activeMenu = computed(() => route.path)
+
+const currentPageTitle = computed(() => {
+  return route.meta?.title || '首页'
+})
 
 const pwdVisible = ref(false)
 const pwdForm = reactive({ oldPassword: '', newPassword: '', confirm: '' })
@@ -148,20 +170,39 @@ const handleCommand = (cmd) => {
 .aside {
   background-color: #001529;
   overflow-x: hidden;
+  box-shadow: 2px 0 8px rgba(0, 0, 0, 0.1);
 }
 .logo {
   height: 60px;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
+  gap: 10px;
   color: #fff;
   font-size: 18px;
   font-weight: bold;
-  background: linear-gradient(135deg, #1890ff, #0050b3);
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  letter-spacing: 1px;
+}
+.logo .el-icon {
+  font-size: 22px;
 }
 .aside .el-menu {
   border-right: none;
+}
+.aside .el-menu-item {
+  height: 50px;
+  line-height: 50px;
+  margin: 4px 8px;
+  border-radius: 6px;
+}
+.aside .el-menu-item:hover {
+  background-color: rgba(255, 255, 255, 0.08) !important;
+}
+.aside .el-menu-item.is-active {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+  color: #fff !important;
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
 }
 .header {
   background: #fff;
@@ -169,16 +210,52 @@ const handleCommand = (cmd) => {
   align-items: center;
   justify-content: space-between;
   box-shadow: 0 1px 4px rgba(0, 21, 41, 0.08);
+  padding: 0 24px;
+}
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+.collapse-icon {
+  font-size: 20px;
+  color: #666;
+  cursor: pointer;
+  transition: color 0.3s;
+}
+.collapse-icon:hover {
+  color: #667eea;
+}
+.page-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: #333;
+}
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 16px;
 }
 .user-info {
   cursor: pointer;
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 10px;
   color: #333;
+  padding: 0 8px;
+  border-radius: 6px;
+  transition: background-color 0.3s;
+}
+.user-info:hover {
+  background-color: #f5f7fa;
+}
+.user-name {
+  font-size: 14px;
+  font-weight: 500;
 }
 .main {
-  background: #f0f2f5;
-  padding: 16px;
+  background: linear-gradient(180deg, #f0f2f5 0%, #e8ecf1 100%);
+  padding: 20px;
+  min-height: calc(100vh - 60px);
 }
 </style>
