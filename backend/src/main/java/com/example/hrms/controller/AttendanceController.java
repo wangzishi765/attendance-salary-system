@@ -70,6 +70,17 @@ public class AttendanceController {
         return Result.success(attendanceService.monthStat(employeeId, month));
     }
 
+    /** 月历视图 */
+    @GetMapping("/calendar")
+    public Result<Map<String, Object>> calendar(
+            @RequestParam(required = false) Long employeeId,
+            @RequestParam String month) {
+        if (!SecurityUtil.isAdmin() || employeeId == null) {
+            employeeId = currentEmployeeId();
+        }
+        return Result.success(attendanceService.calendar(employeeId, month));
+    }
+
     @PostMapping("/manual")
     @PreAuthorize("hasRole('ADMIN')")
     public Result<?> manualSave(@RequestBody Attendance a) {

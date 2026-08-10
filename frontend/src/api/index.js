@@ -27,6 +27,7 @@ export const checkOut = () => request.post('/api/attendance/check-out')
 export const getTodayAttendance = () => request.get('/api/attendance/today')
 export const pageAttendance = (params) => request.get('/api/attendance', { params })
 export const getAttendanceStat = (params) => request.get('/api/attendance/stat', { params })
+export const getAttendanceCalendar = (params) => request.get('/api/attendance/calendar', { params })
 export const saveManualAttendance = (data) => request.post('/api/attendance/manual', data)
 export const deleteAttendance = (id) => request.delete(`/api/attendance/${id}`)
 

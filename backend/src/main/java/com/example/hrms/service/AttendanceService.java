@@ -16,6 +16,7 @@ import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -131,6 +132,50 @@ public class AttendanceService {
         map.put("early", early);
         map.put("absent", absent);
         return map;
+    }
+
+    /** 月历视图：返回某月每天的考勤状态 */
+    public Map<String, Object> calendar(Long employeeId, String month) {
+        List<Attendance> list = listByEmployeeMonth(employeeId, month);
+        // 按日期建立索引
+        Map<LocalDate, Attendance> map = new HashMap<>();
+        for (Attendance a : list) {
+            map.put(a.getAttendDate(), a);
+        }
+
+        LocalDate start = LocalDate.parse(month + "-01");
+        LocalDate end = start.plusMonths(1);
+        List<Map<String, Object>> days = new ArrayList<>();
+
+        for (LocalDate d = start; d.isBefore(end); d = d.plusDays(1)) {
+            Map<String, Object> day = new HashMap<>();
+            day.put("date", d.toString());
+            day.put("day", d.getDayOfMonth());
+            int weekday = d.getDayOfWeek().getValue(); // 1=周一 ... 7=周日
+            day.put("weekday", weekday);
+            boolean isWeekend = weekday >= 6;
+            day.put("isWeekend", isWeekend);
+
+            Attendance a = map.get(d);
+            if (a != null) {
+                day.put("status", a.getStatus());
+                day.put("checkInTime", a.getCheckInTime() != null ? a.getCheckInTime().toLocalTime().toString() : null);
+                day.put("checkOutTime", a.getCheckOutTime() != null ? a.getCheckOutTime().toLocalTime().toString() : null);
+                day.put("workHours", a.getWorkHours());
+            } else if (isWeekend) {
+                day.put("status", "WEEKEND");
+            } else {
+                day.put("status", "ABSENT");
+            }
+            days.add(day);
+        }
+
+        Map<String, Object> result = new HashMap<>();
+        result.put("month", month);
+        result.put("days", days);
+        // 顺带返回统计
+        result.put("stat", monthStat(employeeId, month));
+        return result;
     }
 
     public void save(Attendance a) {
