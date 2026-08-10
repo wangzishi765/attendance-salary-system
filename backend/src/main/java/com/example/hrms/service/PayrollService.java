@@ -163,6 +163,21 @@ public class PayrollService {
         return page;
     }
 
+    /** 导出用：查询某月工资单全部记录（不分页） */
+    public List<Payroll> listForExport(Long employeeId, String month) {
+        LambdaQueryWrapper<Payroll> wrapper = new LambdaQueryWrapper<>();
+        if (employeeId != null) {
+            wrapper.eq(Payroll::getEmployeeId, employeeId);
+        }
+        if (month != null && !month.isEmpty()) {
+            wrapper.eq(Payroll::getSalaryMonth, month);
+        }
+        wrapper.orderByDesc(Payroll::getSalaryMonth).orderByAsc(Payroll::getEmployeeId);
+        List<Payroll> list = payrollMapper.selectList(wrapper);
+        fillNames(list);
+        return list;
+    }
+
     public void markPaid(Long id) {
         Payroll p = payrollMapper.selectById(id);
         p.setStatus("PAID");

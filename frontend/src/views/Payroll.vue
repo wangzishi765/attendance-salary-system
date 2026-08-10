@@ -10,6 +10,7 @@
         <template v-if="userStore.isAdmin">
           <el-date-picker v-model="genMonth" type="month" value-format="YYYY-MM" placeholder="生成月份" />
           <el-button type="warning" :icon="Money" @click="handleGenerate">生成/重算工资单</el-button>
+          <el-button type="primary" plain :icon="Download" @click="handleExport">导出Excel</el-button>
         </template>
       </div>
 
@@ -67,10 +68,10 @@
 
 <script setup>
 import { ref, reactive, onMounted } from 'vue'
-import { Search, Money } from '@element-plus/icons-vue'
+import { Search, Money, Download } from '@element-plus/icons-vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { useUserStore } from '@/store/user'
-import { pagePayrolls, generatePayroll, markPayrollPaid, listAllEmployees } from '@/api'
+import { pagePayrolls, generatePayroll, markPayrollPaid, listAllEmployees, exportPayroll } from '@/api'
 
 const userStore = useUserStore()
 const list = ref([])
@@ -118,6 +119,18 @@ const pay = (id) => {
 const showDetail = (row) => {
   current.value = row
   detailVisible.value = true
+}
+
+const handleExport = async () => {
+  const res = await exportPayroll({ employeeId: query.employeeId, month: query.month })
+  const blob = new Blob([res.data], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' })
+  const url = window.URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.href = url
+  a.download = `工资单${query.month ? '_' + query.month : ''}.xlsx`
+  a.click()
+  window.URL.revokeObjectURL(url)
+  ElMessage.success('导出成功')
 }
 
 onMounted(async () => {

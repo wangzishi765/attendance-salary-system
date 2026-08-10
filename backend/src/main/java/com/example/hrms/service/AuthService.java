@@ -42,4 +42,20 @@ public class AuthService {
                 .employeeId(user.getEmployeeId())
                 .build();
     }
+
+    /** 修改当前登录用户密码 */
+    public void changePassword(Long userId, String oldPassword, String newPassword) {
+        SysUser user = sysUserMapper.selectById(userId);
+        if (user == null) {
+            throw new BizException("用户不存在");
+        }
+        if (!passwordEncoder.matches(oldPassword, user.getPassword())) {
+            throw new BizException("原密码不正确");
+        }
+        if (newPassword == null || newPassword.length() < 6) {
+            throw new BizException("新密码长度不能少于6位");
+        }
+        user.setPassword(passwordEncoder.encode(newPassword));
+        sysUserMapper.updateById(user);
+    }
 }

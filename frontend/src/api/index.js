@@ -3,6 +3,7 @@ import request from '@/utils/request'
 // ==================== 认证 ====================
 export const login = (data) => request.post('/api/auth/login', data)
 export const getMe = () => request.get('/api/auth/me')
+export const changePassword = (data) => request.post('/api/auth/change-password', data)
 
 // ==================== 仪表盘 ====================
 export const getDashboardStat = () => request.get('/api/dashboard/stat')
@@ -50,3 +51,4 @@ export const generatePayroll = (month) => request.post('/api/payrolls/generate',
 export const pagePayrolls = (params) => request.get('/api/payrolls', { params })
 export const markPayrollPaid = (id) => request.put(`/api/payrolls/${id}/pay`)
 export const deletePayroll = (id) => request.delete(`/api/payrolls/${id}`)
+export const exportPayroll = (params) => request.get('/api/payrolls/export', { params, responseType: 'blob' })

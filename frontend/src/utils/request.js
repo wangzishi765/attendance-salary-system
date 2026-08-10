@@ -23,6 +23,10 @@ service.interceptors.request.use(
 // 响应拦截：统一处理业务码
 service.interceptors.response.use(
   (response) => {
+    // 文件下载（blob）直接返回完整响应
+    if (response.config.responseType === 'blob') {
+      return response
+    }
     const res = response.data
     if (res.code === 200) {
       return res

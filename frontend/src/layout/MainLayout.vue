@@ -39,7 +39,8 @@
             </span>
             <template #dropdown>
               <el-dropdown-menu>
-                <el-dropdown-item command="logout">退出登录</el-dropdown-item>
+                <el-dropdown-item command="password">修改密码</el-dropdown-item>
+                <el-dropdown-item command="logout" divided>退出登录</el-dropdown-item>
               </el-dropdown-menu>
             </template>
           </el-dropdown>
@@ -54,20 +55,43 @@
         </router-view>
       </el-main>
     </el-container>
+
+    <!-- 修改密码 -->
+    <el-dialog v-model="pwdVisible" title="修改密码" width="420px">
+      <el-form :model="pwdForm" label-width="90px">
+        <el-form-item label="原密码">
+          <el-input v-model="pwdForm.oldPassword" type="password" show-password />
+        </el-form-item>
+        <el-form-item label="新密码">
+          <el-input v-model="pwdForm.newPassword" type="password" show-password placeholder="至少6位" />
+        </el-form-item>
+        <el-form-item label="确认新密码">
+          <el-input v-model="pwdForm.confirm" type="password" show-password />
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <el-button @click="pwdVisible = false">取消</el-button>
+        <el-button type="primary" @click="submitPwd">确定</el-button>
+      </template>
+    </el-dialog>
   </el-container>
 </template>
 
 <script setup>
-import { computed } from 'vue'
+import { computed, ref, reactive } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { ElMessageBox } from 'element-plus'
+import { ElMessage, ElMessageBox } from 'element-plus'
 import { useUserStore } from '@/store/user'
+import { changePassword } from '@/api'
 
 const route = useRoute()
 const router = useRouter()
 const userStore = useUserStore()
 
 const activeMenu = computed(() => route.path)
+
+const pwdVisible = ref(false)
+const pwdForm = reactive({ oldPassword: '', newPassword: '', confirm: '' })
 
 const menus = computed(() => {
   const layout = router.options.routes.find((r) => r.path === '/')
@@ -78,8 +102,35 @@ const menus = computed(() => {
   })
 })
 
+const submitPwd = async () => {
+  if (!pwdForm.oldPassword || !pwdForm.newPassword) {
+    ElMessage.warning('请填写原密码和新密码')
+    return
+  }
+  if (pwdForm.newPassword !== pwdForm.confirm) {
+    ElMessage.warning('两次输入的新密码不一致')
+    return
+  }
+  const res = await changePassword({ oldPassword: pwdForm.oldPassword, newPassword: pwdForm.newPassword })
+  ElMessage.success(res.message || '修改成功')
+  pwdVisible.value = false
+  pwdForm.oldPassword = ''
+  pwdForm.newPassword = ''
+  pwdForm.confirm = ''
+  // 修改成功后退出重新登录
+  setTimeout(() => {
+    userStore.logout()
+    router.push('/login')
+  }, 800)
+}
+
 const handleCommand = (cmd) => {
-  if (cmd === 'logout') {
+  if (cmd === 'password') {
+    pwdForm.oldPassword = ''
+    pwdForm.newPassword = ''
+    pwdForm.confirm = ''
+    pwdVisible.value = true
+  } else if (cmd === 'logout') {
     ElMessageBox.confirm('确定退出登录吗？', '提示', { type: 'warning' })
       .then(() => {
         userStore.logout()

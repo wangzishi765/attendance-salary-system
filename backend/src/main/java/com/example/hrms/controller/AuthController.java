@@ -1,6 +1,7 @@
 package com.example.hrms.controller;
 
 import com.example.hrms.common.Result;
+import com.example.hrms.dto.ChangePasswordRequest;
 import com.example.hrms.dto.LoginRequest;
 import com.example.hrms.dto.LoginResponse;
 import com.example.hrms.entity.SysUser;
@@ -38,5 +39,15 @@ public class AuthController {
         map.put("role", user.getRole());
         map.put("employeeId", user.getEmployeeId());
         return Result.success(map);
+    }
+
+    @PostMapping("/change-password")
+    public Result<?> changePassword(@Validated @RequestBody ChangePasswordRequest request) {
+        SysUser user = SecurityUtil.getCurrentUser();
+        if (user == null) {
+            return Result.error(401, "未登录");
+        }
+        authService.changePassword(user.getId(), request.getOldPassword(), request.getNewPassword());
+        return Result.success("密码修改成功，请重新登录", null);
     }
 }
