@@ -21,4 +21,9 @@ public class SecurityUtil {
         SysUser user = getCurrentUser();
         return user != null && "ADMIN".equals(user.getRole());
     }
+
+    public static boolean isAdminOrHr() {
+        SysUser user = getCurrentUser();
+        return user != null && ("ADMIN".equals(user.getRole()) || "HR".equals(user.getRole()));
+    }
 }

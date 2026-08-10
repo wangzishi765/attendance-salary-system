@@ -3,11 +3,11 @@
     <el-card shadow="never">
       <div class="page-toolbar">
         <el-date-picker v-model="query.month" type="month" value-format="YYYY-MM" placeholder="选择月份" @change="loadData" />
-        <el-select v-if="userStore.isAdmin" v-model="query.employeeId" placeholder="选择员工" clearable filterable style="width: 180px" @change="loadData">
+        <el-select v-if="userStore.isAdminOrHr" v-model="query.employeeId" placeholder="选择员工" clearable filterable style="width: 180px" @change="loadData">
           <el-option v-for="e in employees" :key="e.id" :label="e.name" :value="e.id" />
         </el-select>
         <el-button type="primary" :icon="Search" @click="loadData">查询</el-button>
-        <template v-if="userStore.isAdmin">
+        <template v-if="userStore.isAdminOrHr">
           <el-date-picker v-model="genMonth" type="month" value-format="YYYY-MM" placeholder="生成月份" />
           <el-button type="warning" :icon="Money" @click="handleGenerate">生成/重算工资单</el-button>
           <el-button type="primary" plain :icon="Download" @click="handleExport">导出Excel</el-button>
@@ -16,8 +16,8 @@
 
       <el-table :data="list" border stripe v-loading="loading">
         <el-table-column prop="salaryMonth" label="月份" width="90" />
-        <el-table-column v-if="userStore.isAdmin" prop="employeeName" label="员工" width="90" />
-        <el-table-column v-if="userStore.isAdmin" prop="departmentName" label="部门" width="90" />
+        <el-table-column v-if="userStore.isAdminOrHr" prop="employeeName" label="员工" width="90" />
+        <el-table-column v-if="userStore.isAdminOrHr" prop="departmentName" label="部门" width="90" />
         <el-table-column prop="baseSalary" label="基本工资" width="100" />
         <el-table-column prop="attendanceBonus" label="全勤奖" width="90" />
         <el-table-column prop="overtimePay" label="加班费" width="90" />
@@ -38,7 +38,7 @@
         <el-table-column label="操作" width="130" fixed="right">
           <template #default="{ row }">
             <el-button link type="primary" @click="showDetail(row)">明细</el-button>
-            <el-button v-if="userStore.isAdmin && row.status !== 'PAID'" link type="success" @click="pay(row.id)">发放</el-button>
+            <el-button v-if="userStore.isAdminOrHr && row.status !== 'PAID'" link type="success" @click="pay(row.id)">发放</el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -134,7 +134,7 @@ const handleExport = async () => {
 }
 
 onMounted(async () => {
-  if (userStore.isAdmin) {
+  if (userStore.isAdminOrHr) {
     const res = await listAllEmployees()
     employees.value = res.data
   }

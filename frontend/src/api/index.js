@@ -10,6 +10,7 @@ export const getDashboardStat = () => request.get('/api/dashboard/stat')
 
 // ==================== 部门 ====================
 export const listDepartments = () => request.get('/api/departments')
+export const getDepartmentTree = () => request.get('/api/departments/tree')
 export const saveDepartment = (data) => request.post('/api/departments', data)
 export const deleteDepartment = (id) => request.delete(`/api/departments/${id}`)
 
@@ -20,6 +21,11 @@ export const getEmployee = (id) => request.get(`/api/employees/${id}`)
 export const createEmployee = (data) => request.post('/api/employees', data)
 export const updateEmployee = (data) => request.put('/api/employees', data)
 export const deleteEmployee = (id) => request.delete(`/api/employees/${id}`)
+export const importEmployees = (file) => {
+  const form = new FormData()
+  form.append('file', file)
+  return request.post('/api/employees/import', form, { headers: { 'Content-Type': 'multipart/form-data' } })
+}
 
 // ==================== 考勤 ====================
 export const checkIn = () => request.post('/api/attendance/check-in')
@@ -30,6 +36,11 @@ export const getAttendanceStat = (params) => request.get('/api/attendance/stat',
 export const getAttendanceCalendar = (params) => request.get('/api/attendance/calendar', { params })
 export const saveManualAttendance = (data) => request.post('/api/attendance/manual', data)
 export const deleteAttendance = (id) => request.delete(`/api/attendance/${id}`)
+export const importAttendance = (file) => {
+  const form = new FormData()
+  form.append('file', file)
+  return request.post('/api/attendance/import', form, { headers: { 'Content-Type': 'multipart/form-data' } })
+}
 
 // ==================== 请假 ====================
 export const pageLeaves = (params) => request.get('/api/leaves', { params })

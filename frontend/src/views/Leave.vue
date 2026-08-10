@@ -12,7 +12,7 @@
       </div>
 
       <el-table :data="list" border stripe v-loading="loading">
-        <el-table-column v-if="userStore.isAdmin" prop="employeeName" label="员工" width="90" />
+        <el-table-column v-if="userStore.isAdminOrHr" prop="employeeName" label="员工" width="90" />
         <el-table-column label="类型" width="90">
           <template #default="{ row }">{{ typeText(row.type) }}</template>
         </el-table-column>
@@ -28,7 +28,7 @@
         <el-table-column prop="approver" label="审批人" width="90" />
         <el-table-column label="操作" width="160">
           <template #default="{ row }">
-            <template v-if="userStore.isAdmin && row.status === 'PENDING'">
+            <template v-if="userStore.isAdminOrHr && row.status === 'PENDING'">
               <el-button link type="success" @click="audit(row.id, 'APPROVED')">批准</el-button>
               <el-button link type="danger" @click="audit(row.id, 'REJECTED')">驳回</el-button>
             </template>
@@ -43,7 +43,7 @@
 
     <el-dialog v-model="dialogVisible" title="申请请假" width="460px">
       <el-form :model="form" label-width="80px">
-        <el-form-item v-if="userStore.isAdmin" label="员工">
+        <el-form-item v-if="userStore.isAdminOrHr" label="员工">
           <el-select v-model="form.employeeId" filterable placeholder="选择员工" style="width: 100%">
             <el-option v-for="e in employees" :key="e.id" :label="e.name" :value="e.id" />
           </el-select>
@@ -149,7 +149,7 @@ const handleDelete = (id) => {
 }
 
 onMounted(async () => {
-  if (userStore.isAdmin) {
+  if (userStore.isAdminOrHr) {
     const res = await listAllEmployees()
     employees.value = res.data
   }

@@ -23,7 +23,7 @@ public class LeaveController {
             @RequestParam(defaultValue = "10") long size,
             @RequestParam(required = false) Long employeeId,
             @RequestParam(required = false) String status) {
-        if (!SecurityUtil.isAdmin()) {
+        if (!SecurityUtil.isAdminOrHr()) {
             employeeId = SecurityUtil.getCurrentUser().getEmployeeId();
         }
         return Result.success(leaveService.page(current, size, employeeId, status));
@@ -33,22 +33,23 @@ public class LeaveController {
     @PostMapping
     public Result<?> apply(@RequestBody LeaveRecord record) {
         SysUser user = SecurityUtil.getCurrentUser();
-        if (!SecurityUtil.isAdmin() && user.getEmployeeId() != null) {
+        if (!SecurityUtil.isAdminOrHr() && user.getEmployeeId() != null) {
             record.setEmployeeId(user.getEmployeeId());
         }
         leaveService.apply(record);
         return Result.success("申请已提交，等待审批", null);
     }
 
-    /** 管理员审批 */
+    /** 管理员/人事审批 */
     @PutMapping("/{id}/audit")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'HR')")
     public Result<?> audit(@PathVariable Long id, @RequestParam String status) {
         leaveService.audit(id, status, SecurityUtil.getCurrentUser().getRealName());
         return Result.success();
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'HR')")
     public Result<?> delete(@PathVariable Long id) {
         leaveService.delete(id);
         return Result.success();

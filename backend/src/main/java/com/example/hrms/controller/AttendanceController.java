@@ -10,6 +10,7 @@ import com.example.hrms.service.AttendanceService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.Map;
 
@@ -46,14 +47,14 @@ public class AttendanceController {
         return Result.success(attendanceService.today(currentEmployeeId()));
     }
 
-    /** 分页查询（管理员可查全部；员工只能查自己） */
+    /** 分页查询（管理员/人事可查全部；员工只能查自己） */
     @GetMapping
     public Result<Page<Attendance>> page(
             @RequestParam(defaultValue = "1") long current,
             @RequestParam(defaultValue = "10") long size,
             @RequestParam(required = false) Long employeeId,
             @RequestParam(required = false) String month) {
-        if (!SecurityUtil.isAdmin()) {
+        if (!SecurityUtil.isAdminOrHr()) {
             employeeId = currentEmployeeId();
         }
         return Result.success(attendanceService.page(current, size, employeeId, month));
@@ -64,7 +65,7 @@ public class AttendanceController {
     public Result<Map<String, Object>> stat(
             @RequestParam(required = false) Long employeeId,
             @RequestParam String month) {
-        if (!SecurityUtil.isAdmin() || employeeId == null) {
+        if (!SecurityUtil.isAdminOrHr() || employeeId == null) {
             employeeId = currentEmployeeId();
         }
         return Result.success(attendanceService.monthStat(employeeId, month));
@@ -75,23 +76,29 @@ public class AttendanceController {
     public Result<Map<String, Object>> calendar(
             @RequestParam(required = false) Long employeeId,
             @RequestParam String month) {
-        if (!SecurityUtil.isAdmin() || employeeId == null) {
+        if (!SecurityUtil.isAdminOrHr() || employeeId == null) {
             employeeId = currentEmployeeId();
         }
         return Result.success(attendanceService.calendar(employeeId, month));
     }
 
     @PostMapping("/manual")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'HR')")
     public Result<?> manualSave(@RequestBody Attendance a) {
         attendanceService.save(a);
         return Result.success();
     }
 
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'HR')")
     public Result<?> delete(@PathVariable Long id) {
         attendanceService.delete(id);
         return Result.success();
+    }
+
+    @PostMapping("/import")
+    @PreAuthorize("hasAnyRole('ADMIN', 'HR')")
+    public Result<Map<String, Object>> importExcel(@RequestParam("file") MultipartFile file) {
+        return Result.success("导入完成", attendanceService.importExcel(file));
     }
 }

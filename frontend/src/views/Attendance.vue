@@ -3,7 +3,7 @@
     <el-card shadow="never">
       <div class="page-toolbar">
         <el-select
-          v-if="userStore.isAdmin"
+          v-if="userStore.isAdminOrHr"
           v-model="query.employeeId"
           placeholder="选择员工"
           clearable
@@ -21,7 +21,8 @@
           @change="onQueryChange"
         />
         <el-button type="primary" :icon="Search" @click="loadData">查询</el-button>
-        <el-button v-if="userStore.isAdmin" type="success" :icon="Plus" @click="openManual">补录考勤</el-button>
+        <el-button v-if="userStore.isAdminOrHr" type="success" :icon="Plus" @click="openManual">补录考勤</el-button>
+        <el-button v-if="userStore.isAdminOrHr" type="warning" :icon="Upload" @click="openImport">导入Excel</el-button>
         <div class="view-switch">
           <el-radio-group v-model="viewMode" size="default">
             <el-radio-button label="list">列表</el-radio-button>
@@ -33,7 +34,7 @@
       <!-- 列表视图 -->
       <div v-if="viewMode === 'list'">
         <el-table :data="list" border stripe v-loading="loading">
-          <el-table-column v-if="userStore.isAdmin" prop="employeeName" label="员工" width="100" />
+          <el-table-column v-if="userStore.isAdminOrHr" prop="employeeName" label="员工" width="100" />
           <el-table-column prop="attendDate" label="日期" width="120" />
           <el-table-column label="上班打卡" width="160">
             <template #default="{ row }">{{ formatTime(row.checkInTime) }}</template>
@@ -48,7 +49,7 @@
             </template>
           </el-table-column>
           <el-table-column prop="remark" label="备注" />
-          <el-table-column v-if="userStore.isAdmin" label="操作" width="90">
+          <el-table-column v-if="userStore.isAdminOrHr" label="操作" width="90">
             <template #default="{ row }">
               <el-button link type="danger" @click="handleDelete(row.id)">删除</el-button>
             </template>
@@ -140,17 +141,64 @@
         <el-button type="primary" @click="saveManual">保存</el-button>
       </template>
     </el-dialog>
+
+    <!-- 导入弹窗 -->
+    <el-dialog v-model="importVisible" title="导入考勤" width="520px">
+      <el-alert type="info" :closable="false" style="margin-bottom: 16px">
+        <p>Excel 格式（第 1 行为表头）：</p>
+        <p>工号 | 日期 | 上班时间 | 下班时间 | 状态 | 备注</p>
+        <p>状态可选：正常/迟到/早退/缺勤（留空则自动判断）</p>
+      </el-alert>
+      <el-upload
+        :auto-upload="false"
+        :limit="1"
+        accept=".xlsx,.xls"
+        :on-change="onFileChange"
+        :on-remove="onFileRemove"
+        drag
+      >
+        <el-icon class="el-icon--upload"><upload-filled /></el-icon>
+        <div class="el-upload__text">将文件拖到此处，或<em>点击上传</em></div>
+        <template #tip>
+          <div class="el-upload__tip">仅支持 .xlsx / .xls 格式</div>
+        </template>
+      </el-upload>
+
+      <div v-if="importResult" class="import-result">
+        <el-divider />
+        <el-descriptions :column="3" border>
+          <el-descriptions-item label="总数">{{ importResult.total }}</el-descriptions-item>
+          <el-descriptions-item label="成功">
+            <span style="color: #67c23a; font-weight: bold">{{ importResult.success }}</span>
+          </el-descriptions-item>
+          <el-descriptions-item label="失败">
+            <span style="color: #f56c6c; font-weight: bold">{{ importResult.fail }}</span>
+          </el-descriptions-item>
+        </el-descriptions>
+        <div v-if="importResult.errors && importResult.errors.length" class="errors">
+          <p style="color: #f56c6c; margin-top: 12px; font-weight: bold">错误明细：</p>
+          <el-table :data="importResult.errors" size="small" border>
+            <el-table-column prop="row" label="行号" width="80" />
+            <el-table-column prop="msg" label="错误原因" />
+          </el-table>
+        </div>
+      </div>
+      <template #footer>
+        <el-button @click="importVisible = false">关闭</el-button>
+        <el-button type="primary" :disabled="!importFile" :loading="importLoading" @click="doImport">开始导入</el-button>
+      </template>
+    </el-dialog>
   </div>
 </template>
 
 <script setup>
 import { ref, reactive, computed, onMounted, watch } from 'vue'
-import { Search, Plus } from '@element-plus/icons-vue'
+import { Search, Plus, Upload, UploadFilled } from '@element-plus/icons-vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { useUserStore } from '@/store/user'
 import {
   pageAttendance, listAllEmployees, saveManualAttendance, deleteAttendance,
-  getAttendanceCalendar
+  getAttendanceCalendar, importAttendance
 } from '@/api'
 
 const userStore = useUserStore()
@@ -163,6 +211,10 @@ const dialogVisible = ref(false)
 
 const calDays = ref([])
 const calStat = ref({})
+const importVisible = ref(false)
+const importFile = ref(null)
+const importLoading = ref(false)
+const importResult = ref(null)
 
 const query = reactive({ current: 1, size: 10, employeeId: null, month: '' })
 const form = reactive({ employeeId: null, attendDate: '', status: 'NORMAL', remark: '' })
@@ -240,11 +292,41 @@ const handleDelete = (id) => {
   }).catch(() => {})
 }
 
+const openImport = () => {
+  importFile.value = null
+  importResult.value = null
+  importVisible.value = true
+}
+
+const onFileChange = (file) => {
+  importFile.value = file.raw
+}
+
+const onFileRemove = () => {
+  importFile.value = null
+}
+
+const doImport = async () => {
+  if (!importFile.value) {
+    ElMessage.warning('请选择文件')
+    return
+  }
+  importLoading.value = true
+  try {
+    const res = await importAttendance(importFile.value)
+    importResult.value = res.data
+    ElMessage.success(res.message || '导入完成')
+    loadData()
+  } finally {
+    importLoading.value = false
+  }
+}
+
 onMounted(async () => {
   // 默认当月
   const now = new Date()
   query.month = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`
-  if (userStore.isAdmin) {
+  if (userStore.isAdminOrHr) {
     const res = await listAllEmployees()
     employees.value = res.data
     // 默认选第一个员工

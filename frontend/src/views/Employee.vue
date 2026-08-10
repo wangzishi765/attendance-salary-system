@@ -8,6 +8,7 @@
         </el-select>
         <el-button type="primary" :icon="Search" @click="loadData">查询</el-button>
         <el-button type="success" :icon="Plus" @click="openAdd">新增员工</el-button>
+        <el-button type="warning" :icon="Upload" @click="openImport">导入Excel</el-button>
       </div>
 
       <el-table :data="list" border stripe v-loading="loading">
@@ -82,20 +83,72 @@
         <el-button type="primary" @click="save">保存</el-button>
       </template>
     </el-dialog>
+
+    <!-- 导入弹窗 -->
+    <el-dialog v-model="importVisible" title="导入员工" width="520px">
+      <el-alert type="info" :closable="false" style="margin-bottom: 16px">
+        <p>Excel 格式（第 1 行为表头）：</p>
+        <p>工号 | 姓名 | 性别 | 手机号 | 邮箱 | 部门名称 | 职位 | 基本工资 | 入职日期 | 状态</p>
+        <p>初始密码：123456</p>
+      </el-alert>
+      <el-upload
+        ref="uploadRef"
+        :auto-upload="false"
+        :limit="1"
+        accept=".xlsx,.xls"
+        :on-change="onFileChange"
+        :on-remove="onFileRemove"
+        drag
+      >
+        <el-icon class="el-icon--upload"><upload-filled /></el-icon>
+        <div class="el-upload__text">将文件拖到此处，或<em>点击上传</em></div>
+        <template #tip>
+          <div class="el-upload__tip">仅支持 .xlsx / .xls 格式</div>
+        </template>
+      </el-upload>
+
+      <div v-if="importResult" class="import-result">
+        <el-divider />
+        <el-descriptions :column="3" border>
+          <el-descriptions-item label="总数">{{ importResult.total }}</el-descriptions-item>
+          <el-descriptions-item label="成功">
+            <span style="color: #67c23a; font-weight: bold">{{ importResult.success }}</span>
+          </el-descriptions-item>
+          <el-descriptions-item label="失败">
+            <span style="color: #f56c6c; font-weight: bold">{{ importResult.fail }}</span>
+          </el-descriptions-item>
+        </el-descriptions>
+        <div v-if="importResult.errors && importResult.errors.length" class="errors">
+          <p style="color: #f56c6c; margin-top: 12px; font-weight: bold">错误明细：</p>
+          <el-table :data="importResult.errors" size="small" border>
+            <el-table-column prop="row" label="行号" width="80" />
+            <el-table-column prop="msg" label="错误原因" />
+          </el-table>
+        </div>
+      </div>
+      <template #footer>
+        <el-button @click="importVisible = false">关闭</el-button>
+        <el-button type="primary" :disabled="!importFile" :loading="importLoading" @click="doImport">开始导入</el-button>
+      </template>
+    </el-dialog>
   </div>
 </template>
 
 <script setup>
 import { ref, reactive, onMounted } from 'vue'
-import { Search, Plus } from '@element-plus/icons-vue'
+import { Search, Plus, Upload, UploadFilled } from '@element-plus/icons-vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { pageEmployees, createEmployee, updateEmployee, deleteEmployee, listDepartments } from '@/api'
+import { pageEmployees, createEmployee, updateEmployee, deleteEmployee, listDepartments, importEmployees } from '@/api'
 
 const list = ref([])
 const total = ref(0)
 const loading = ref(false)
 const departments = ref([])
 const dialogVisible = ref(false)
+const importVisible = ref(false)
+const importFile = ref(null)
+const importLoading = ref(false)
+const importResult = ref(null)
 
 const query = reactive({ current: 1, size: 10, keyword: '', departmentId: null })
 const emptyForm = () => ({ id: null, empNo: '', name: '', gender: '男', departmentId: null, position: '', baseSalary: 8000, phone: '', email: '', hireDate: '', status: '在职' })
@@ -143,6 +196,36 @@ const handleDelete = (id) => {
     ElMessage.success('删除成功')
     loadData()
   }).catch(() => {})
+}
+
+const openImport = () => {
+  importFile.value = null
+  importResult.value = null
+  importVisible.value = true
+}
+
+const onFileChange = (file) => {
+  importFile.value = file.raw
+}
+
+const onFileRemove = () => {
+  importFile.value = null
+}
+
+const doImport = async () => {
+  if (!importFile.value) {
+    ElMessage.warning('请选择文件')
+    return
+  }
+  importLoading.value = true
+  try {
+    const res = await importEmployees(importFile.value)
+    importResult.value = res.data
+    ElMessage.success(res.message || '导入完成')
+    loadData()
+  } finally {
+    importLoading.value = false
+  }
 }
 
 onMounted(async () => {

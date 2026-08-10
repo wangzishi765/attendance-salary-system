@@ -19,7 +19,10 @@ CREATE TABLE IF NOT EXISTS sys_user (
 -- 部门表
 CREATE TABLE IF NOT EXISTS department (
     id           BIGINT       AUTO_INCREMENT PRIMARY KEY,
+    parent_id    BIGINT       NOT NULL DEFAULT 0,       -- 父部门ID，顶级为0
     name         VARCHAR(64)  NOT NULL,
+    sort         INT          NOT NULL DEFAULT 0,       -- 排序
+    status       VARCHAR(16)  NOT NULL DEFAULT '启用',   -- 启用 / 禁用
     remark       VARCHAR(255),
     deleted      INT          NOT NULL DEFAULT 0,
     create_time  TIMESTAMP    DEFAULT CURRENT_TIMESTAMP

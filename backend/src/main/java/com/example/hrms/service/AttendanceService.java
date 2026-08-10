@@ -8,7 +8,10 @@ import com.example.hrms.entity.Employee;
 import com.example.hrms.mapper.AttendanceMapper;
 import com.example.hrms.mapper.EmployeeMapper;
 import lombok.RequiredArgsConstructor;
+import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -188,5 +191,120 @@ public class AttendanceService {
 
     public void delete(Long id) {
         attendanceMapper.deleteById(id);
+    }
+
+    /** Excel 导入考勤 */
+    public Map<String, Object> importExcel(MultipartFile file) {
+        List<Map<String, String>> errors = new ArrayList<>();
+        int success = 0;
+        int total = 0;
+
+        // 员工映射（工号 -> ID）
+        Map<String, Long> empMap = employeeMapper.selectList(null).stream()
+                .collect(Collectors.toMap(Employee::getEmpNo, Employee::getId, (a, b) -> a));
+
+        try (Workbook wb = new XSSFWorkbook(file.getInputStream())) {
+            Sheet sheet = wb.getSheetAt(0);
+            for (int i = 1; i <= sheet.getLastRowNum(); i++) {
+                Row row = sheet.getRow(i);
+                if (row == null) continue;
+                total++;
+
+                try {
+                    String empNo = getCellStr(row.getCell(0));
+                    String dateStr = getCellStr(row.getCell(1));
+                    String checkInStr = getCellStr(row.getCell(2));
+                    String checkOutStr = getCellStr(row.getCell(3));
+                    String status = getCellStr(row.getCell(4));
+                    String remark = getCellStr(row.getCell(5));
+
+                    if (!empMap.containsKey(empNo)) {
+                        throw new BizException("工号不存在：" + empNo);
+                    }
+                    Long employeeId = empMap.get(empNo);
+
+                    LocalDate date;
+                    Cell dateCell = row.getCell(1);
+                    if (dateCell.getCellType() == CellType.NUMERIC && DateUtil.isCellDateFormatted(dateCell)) {
+                        date = dateCell.getDateCellValue().toInstant()
+                                .atZone(java.time.ZoneId.systemDefault()).toLocalDate();
+                    } else {
+                        date = LocalDate.parse(dateStr);
+                    }
+
+                    Attendance a = attendanceMapper.selectOne(
+                            new LambdaQueryWrapper<Attendance>()
+                                    .eq(Attendance::getEmployeeId, employeeId)
+                                    .eq(Attendance::getAttendDate, date));
+                    boolean isNew = false;
+                    if (a == null) {
+                        a = new Attendance();
+                        a.setEmployeeId(employeeId);
+                        a.setAttendDate(date);
+                        isNew = true;
+                    }
+
+                    // 上班时间
+                    if (hasText(checkInStr)) {
+                        LocalTime t = LocalTime.parse(checkInStr);
+                        a.setCheckInTime(LocalDateTime.of(date, t));
+                    }
+                    // 下班时间
+                    if (hasText(checkOutStr)) {
+                        LocalTime t = LocalTime.parse(checkOutStr);
+                        a.setCheckOutTime(LocalDateTime.of(date, t));
+                    }
+                    // 状态
+                    if (hasText(status)) {
+                        a.setStatus(status.toUpperCase());
+                    } else if (a.getCheckInTime() != null) {
+                        a.setStatus(a.getCheckInTime().toLocalTime().isAfter(WORK_START) ? "LATE" : "NORMAL");
+                    }
+                    // 工时
+                    if (a.getCheckInTime() != null && a.getCheckOutTime() != null) {
+                        long minutes = Duration.between(a.getCheckInTime(), a.getCheckOutTime()).toMinutes();
+                        a.setWorkHours(new BigDecimal(minutes).divide(new BigDecimal(60), 2, RoundingMode.HALF_UP));
+                    }
+                    a.setRemark(remark);
+
+                    if (isNew) {
+                        attendanceMapper.insert(a);
+                    } else {
+                        attendanceMapper.updateById(a);
+                    }
+                    success++;
+                } catch (Exception e) {
+                    Map<String, String> err = new HashMap<>();
+                    err.put("row", String.valueOf(i + 1));
+                    err.put("msg", e.getMessage());
+                    errors.add(err);
+                }
+            }
+        } catch (Exception e) {
+            throw new BizException("解析 Excel 失败：" + e.getMessage());
+        }
+
+        Map<String, Object> result = new HashMap<>();
+        result.put("total", total);
+        result.put("success", success);
+        result.put("fail", total - success);
+        result.put("errors", errors);
+        return result;
+    }
+
+    private boolean hasText(String s) {
+        return s != null && !s.isEmpty();
+    }
+
+    private String getCellStr(Cell cell) {
+        if (cell == null) return "";
+        switch (cell.getCellType()) {
+            case STRING: return cell.getStringCellValue().trim();
+            case NUMERIC:
+                if (DateUtil.isCellDateFormatted(cell)) return cell.getDateCellValue().toString();
+                return String.valueOf((long) cell.getNumericCellValue());
+            case BOOLEAN: return String.valueOf(cell.getBooleanCellValue());
+            default: return "";
+        }
     }
 }

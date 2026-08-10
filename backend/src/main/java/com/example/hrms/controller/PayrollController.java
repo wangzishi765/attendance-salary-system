@@ -28,7 +28,7 @@ public class PayrollController {
 
     /** 生成/重算某月工资单 */
     @PostMapping("/generate")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'HR')")
     public Result<Map<String, Object>> generate(@RequestParam String month) {
         int count = payrollService.generateMonth(month);
         Map<String, Object> map = new HashMap<>();
@@ -43,29 +43,29 @@ public class PayrollController {
             @RequestParam(defaultValue = "10") long size,
             @RequestParam(required = false) Long employeeId,
             @RequestParam(required = false) String month) {
-        if (!SecurityUtil.isAdmin()) {
+        if (!SecurityUtil.isAdminOrHr()) {
             employeeId = SecurityUtil.getCurrentUser().getEmployeeId();
         }
         return Result.success(payrollService.page(current, size, employeeId, month));
     }
 
     @PutMapping("/{id}/pay")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'HR')")
     public Result<?> markPaid(@PathVariable Long id) {
         payrollService.markPaid(id);
         return Result.success();
     }
 
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'HR')")
     public Result<?> delete(@PathVariable Long id) {
         payrollService.delete(id);
         return Result.success();
     }
 
-    /** 导出工资单为 Excel（管理员） */
+    /** 导出工资单为 Excel（管理员/人事） */
     @GetMapping("/export")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'HR')")
     public void export(@RequestParam(required = false) Long employeeId,
                        @RequestParam(required = false) String month,
                        HttpServletResponse response) throws Exception {

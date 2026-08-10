@@ -21,6 +21,11 @@ public class DepartmentController {
         return Result.success(departmentService.list());
     }
 
+    @GetMapping("/tree")
+    public Result<List<Department>> tree() {
+        return Result.success(departmentService.listTree());
+    }
+
     @PostMapping
     @PreAuthorize("hasRole('ADMIN')")
     public Result<?> save(@RequestBody Department dept) {

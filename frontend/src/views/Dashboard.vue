@@ -1,7 +1,7 @@
 <template>
   <div>
     <!-- 员工：打卡卡片 -->
-    <el-card v-if="!userStore.isAdmin" class="clock-card" shadow="hover">
+    <el-card v-if="!userStore.isAdminOrHr" class="clock-card" shadow="hover">
       <div class="clock-content">
         <div class="clock-info">
           <div class="clock-time">{{ nowTime }}</div>
@@ -39,13 +39,13 @@
     <el-row :gutter="16">
       <el-col :xs="24" :sm="12">
         <el-card shadow="never">
-          <template #header>{{ userStore.isAdmin ? '各部门人数分布' : '本月考勤构成' }}</template>
+          <template #header>{{ userStore.isAdminOrHr ? '各部门人数分布' : '本月考勤构成' }}</template>
           <div ref="pieRef" class="chart"></div>
         </el-card>
       </el-col>
       <el-col :xs="24" :sm="12">
         <el-card shadow="never">
-          <template #header>{{ userStore.isAdmin ? '本月各员工实发工资' : '本月考勤天数' }}</template>
+          <template #header>{{ userStore.isAdminOrHr ? '本月各员工实发工资' : '本月考勤天数' }}</template>
           <div ref="barRef" class="chart"></div>
         </el-card>
       </el-col>
@@ -82,7 +82,7 @@ const currentMonth = () => {
 }
 
 const cards = computed(() => {
-  if (userStore.isAdmin) {
+  if (userStore.isAdminOrHr) {
     return [
       { label: '员工总数', value: stat.employeeCount, icon: 'User', color: '#1890ff' },
       { label: '部门数', value: stat.departmentCount, icon: 'OfficeBuilding', color: '#52c41a' },
@@ -174,7 +174,7 @@ const resize = () => { pieChart?.resize(); barChart?.resize() }
 onMounted(async () => {
   updateClock()
   timer = setInterval(updateClock, 1000)
-  if (userStore.isAdmin) {
+  if (userStore.isAdminOrHr) {
     const res = await getDashboardStat()
     Object.assign(stat, res.data)
     await nextTick()

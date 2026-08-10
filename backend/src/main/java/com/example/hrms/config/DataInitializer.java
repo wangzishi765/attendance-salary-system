@@ -56,6 +56,8 @@ public class DataInitializer implements CommandLineRunner {
         // 3. 系统账号
         // 管理员
         user("admin", "admin123", "系统管理员", "ADMIN", null);
+        // 人事专员
+        user("hr", "hr123456", "人事专员", "HR", null);
         // 员工账号（用户名=工号，密码 123456）
         user(e1.getEmpNo(), "123456", e1.getName(), "EMPLOYEE", e1.getId());
         user(e2.getEmpNo(), "123456", e2.getName(), "EMPLOYEE", e2.getId());

@@ -23,7 +23,7 @@ public class OvertimeController {
             @RequestParam(defaultValue = "10") long size,
             @RequestParam(required = false) Long employeeId,
             @RequestParam(required = false) String status) {
-        if (!SecurityUtil.isAdmin()) {
+        if (!SecurityUtil.isAdminOrHr()) {
             employeeId = SecurityUtil.getCurrentUser().getEmployeeId();
         }
         return Result.success(overtimeService.page(current, size, employeeId, status));
@@ -32,7 +32,7 @@ public class OvertimeController {
     @PostMapping
     public Result<?> apply(@RequestBody OvertimeRecord record) {
         SysUser user = SecurityUtil.getCurrentUser();
-        if (!SecurityUtil.isAdmin() && user.getEmployeeId() != null) {
+        if (!SecurityUtil.isAdminOrHr() && user.getEmployeeId() != null) {
             record.setEmployeeId(user.getEmployeeId());
         }
         overtimeService.apply(record);
@@ -40,13 +40,14 @@ public class OvertimeController {
     }
 
     @PutMapping("/{id}/audit")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'HR')")
     public Result<?> audit(@PathVariable Long id, @RequestParam String status) {
         overtimeService.audit(id, status);
         return Result.success();
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'HR')")
     public Result<?> delete(@PathVariable Long id) {
         overtimeService.delete(id);
         return Result.success();

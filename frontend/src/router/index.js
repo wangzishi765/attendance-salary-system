@@ -40,13 +40,13 @@ const routes = [
         path: 'payroll',
         name: 'Payroll',
         component: () => import('@/views/Payroll.vue'),
-        meta: { title: '工资单', icon: 'Money' }
+        meta: { title: '工资单', icon: 'Money', roles: ['ADMIN', 'HR', 'EMPLOYEE'] }
       },
       {
         path: 'employee',
         name: 'Employee',
         component: () => import('@/views/Employee.vue'),
-        meta: { title: '员工管理', icon: 'User', roles: ['ADMIN'] }
+        meta: { title: '员工管理', icon: 'User', roles: ['ADMIN', 'HR'] }
       },
       {
         path: 'department',

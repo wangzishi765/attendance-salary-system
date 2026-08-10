@@ -26,7 +26,10 @@ CREATE TABLE IF NOT EXISTS sys_user (
 
 CREATE TABLE IF NOT EXISTS department (
     id           BIGINT       AUTO_INCREMENT PRIMARY KEY,
+    parent_id    BIGINT       NOT NULL DEFAULT 0,
     name         VARCHAR(64)  NOT NULL,
+    sort         INT          NOT NULL DEFAULT 0,
+    status       VARCHAR(16)  NOT NULL DEFAULT '启用',
     remark       VARCHAR(255),
     deleted      INT          NOT NULL DEFAULT 0,
     create_time  TIMESTAMP    DEFAULT CURRENT_TIMESTAMP

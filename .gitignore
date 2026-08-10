@@ -38,3 +38,15 @@ backend/src/main/resources/static/
 # ===== OS =====
 .DS_Store
 Thumbs.db
+
+# ===== 毕业设计文档（不上传到 GitHub） =====
+docs/毕业论文.md
+docs/开题报告.md
+docs/任务书.md
+项目开发记事文档.md
+
+# ===== 临时测试文件 =====
+create-test.js
+create-test2.js
+test-*.xlsx
+node_modules/
