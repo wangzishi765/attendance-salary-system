@@ -1,0 +1,43 @@
+# =============================================================
+# docker compose 一键启动
+#   默认：只启动应用，使用内嵌 H2 数据库（零外部依赖）
+#     docker compose up -d
+#   使用 MySQL：启用 mysql profile
+#     docker compose --profile mysql up -d
+# =============================================================
+services:
+  app:
+    build: .
+    image: hrms:latest
+    container_name: hrms-app
+    ports:
+      - "8080:8080"
+    environment:
+      # 默认 h2；如需连 mysql 改为 mysql 并配合下方 mysql 服务
+      SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE:-h2}
+      MYSQL_HOST: mysql
+      MYSQL_PORT: "3306"
+      MYSQL_DB: hrms
+      MYSQL_USER: root
+      MYSQL_PASSWORD: root123
+    volumes:
+      # 持久化 H2 数据文件
+      - hrms-data:/app/data
+    restart: unless-stopped
+
+  mysql:
+    image: mysql:8.0
+    container_name: hrms-mysql
+    profiles: ["mysql"]
+    environment:
+      MYSQL_ROOT_PASSWORD: root123
+      MYSQL_DATABASE: hrms
+    ports:
+      - "3306:3306"
+    volumes:
+      - hrms-mysql:/var/lib/mysql
+    restart: unless-stopped
+
+volumes:
+  hrms-data:
+  hrms-mysql:

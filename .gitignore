@@ -1,0 +1,40 @@
+# ===== Java / Maven =====
+target/
+!.mvn/wrapper/maven-wrapper.jar
+*.class
+*.jar
+!**/maven-wrapper.jar
+*.log
+hs_err_pid*
+
+# ===== 运行时数据（H2 本地数据库文件） =====
+backend/data/
+data/
+*.db
+*.mv.db
+*.trace.db
+
+# ===== 前端 / Node =====
+node_modules/
+frontend/dist/
+.npm/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# 前端打包产物会输出到后端静态目录，不纳入版本库
+backend/src/main/resources/static/
+
+# ===== IDE =====
+.idea/
+*.iml
+.vscode/
+.settings/
+.project
+.classpath
+*.swp
+
+# ===== OS =====
+.DS_Store
+Thumbs.db
