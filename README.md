@@ -1,8 +1,31 @@
 # 中小企业员工考勤与薪资核算管理系统
 
+![Java](https://img.shields.io/badge/Java-8-orange?logo=openjdk&logoColor=white)
+![Spring Boot](https://img.shields.io/badge/Spring%20Boot-2.7-6DB33F?logo=springboot&logoColor=white)
+![Vue](https://img.shields.io/badge/Vue-3.5-4FC08D?logo=vuedotjs&logoColor=white)
+![Element Plus](https://img.shields.io/badge/Element%20Plus-2.8-409EFF?logo=element&logoColor=white)
+![MyBatis-Plus](https://img.shields.io/badge/MyBatis--Plus-3.5-red)
+![Database](https://img.shields.io/badge/DB-H2%20%7C%20MySQL8-blue)
+![License](https://img.shields.io/badge/License-学习用途-lightgrey)
+
 > 基于 **Spring Boot + Vue 3** 的前后端分离项目，实现员工管理、考勤打卡、请假/加班审批、薪资规则配置与工资自动核算。
 >
 > **开箱即用**：默认使用内嵌 H2 数据库，无需安装 MySQL，启动即可登录使用；也支持一键切换 MySQL。
+
+## 🖼️ 界面预览
+
+| 登录 | 首页仪表盘（管理员） |
+| :---: | :---: |
+| ![登录](docs/screenshots/01-login.png) | ![仪表盘](docs/screenshots/02-dashboard.png) |
+
+| 员工管理 | 工资单 |
+| :---: | :---: |
+| ![员工管理](docs/screenshots/03-employee.png) | ![工资单](docs/screenshots/05-payroll.png) |
+
+| 考勤管理 | 薪资规则 |
+| :---: | :---: |
+| ![考勤管理](docs/screenshots/04-attendance.png) | ![薪资规则](docs/screenshots/06-salary-rule.png) |
+
 
 ---
 

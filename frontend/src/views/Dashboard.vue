@@ -35,20 +35,32 @@
       </el-col>
     </el-row>
 
-    <el-card shadow="never" class="welcome">
-      <h3>欢迎使用，{{ userStore.realName || userStore.username }}！</h3>
-      <p v-if="userStore.isAdmin">您可以在左侧菜单管理员工、部门、考勤、请假、加班，配置薪资规则并生成工资单。</p>
-      <p v-else>您可以在此打卡，并在左侧查看个人考勤、提交请假/加班申请、查看工资单。</p>
-    </el-card>
+    <!-- 图表区 -->
+    <el-row :gutter="16">
+      <el-col :xs="24" :sm="12">
+        <el-card shadow="never">
+          <template #header>{{ userStore.isAdmin ? '各部门人数分布' : '本月考勤构成' }}</template>
+          <div ref="pieRef" class="chart"></div>
+        </el-card>
+      </el-col>
+      <el-col :xs="24" :sm="12">
+        <el-card shadow="never">
+          <template #header>{{ userStore.isAdmin ? '本月各员工实发工资' : '本月考勤天数' }}</template>
+          <div ref="barRef" class="chart"></div>
+        </el-card>
+      </el-col>
+    </el-row>
   </div>
 </template>
 
 <script setup>
-import { ref, reactive, computed, onMounted, onUnmounted } from 'vue'
+import { ref, reactive, computed, onMounted, onUnmounted, nextTick } from 'vue'
 import { ElMessage } from 'element-plus'
+import * as echarts from 'echarts'
 import { useUserStore } from '@/store/user'
 import {
-  getDashboardStat, getTodayAttendance, checkIn, checkOut, getAttendanceStat
+  getDashboardStat, getTodayAttendance, checkIn, checkOut,
+  getAttendanceStat, listAllEmployees, pagePayrolls
 } from '@/api'
 
 const userStore = useUserStore()
@@ -56,8 +68,12 @@ const nowTime = ref('')
 const nowDate = ref('')
 const todayRecord = ref(null)
 const stat = reactive({ employeeCount: 0, departmentCount: 0, todayAttendance: 0, pendingLeave: 0 })
-const empStat = reactive({ total: 0, normal: 0, late: 0, absent: 0 })
+const empStat = reactive({ total: 0, normal: 0, late: 0, early: 0, absent: 0 })
 
+const pieRef = ref(null)
+const barRef = ref(null)
+let pieChart = null
+let barChart = null
 let timer = null
 
 const currentMonth = () => {
@@ -95,16 +111,65 @@ const loadToday = async () => {
   todayRecord.value = res.data
 }
 
-const doCheckIn = async () => {
-  await checkIn()
-  ElMessage.success('上班打卡成功')
-  loadToday()
+const doCheckIn = async () => { await checkIn(); ElMessage.success('上班打卡成功'); loadToday() }
+const doCheckOut = async () => { await checkOut(); ElMessage.success('下班打卡成功'); loadToday() }
+
+const renderPie = (data) => {
+  if (!pieChart) pieChart = echarts.init(pieRef.value)
+  pieChart.setOption({
+    tooltip: { trigger: 'item' },
+    legend: { bottom: 0 },
+    color: ['#1890ff', '#52c41a', '#faad14', '#f5222d', '#722ed1', '#13c2c2'],
+    series: [{
+      type: 'pie', radius: ['40%', '68%'], center: ['50%', '45%'],
+      label: { formatter: '{b}: {c}' },
+      data
+    }]
+  })
 }
-const doCheckOut = async () => {
-  await checkOut()
-  ElMessage.success('下班打卡成功')
-  loadToday()
+
+const renderBar = (names, values, unit) => {
+  if (!barChart) barChart = echarts.init(barRef.value)
+  barChart.setOption({
+    tooltip: { trigger: 'axis' },
+    grid: { left: 40, right: 20, top: 20, bottom: 30 },
+    xAxis: { type: 'category', data: names },
+    yAxis: { type: 'value', name: unit },
+    series: [{
+      type: 'bar', data: values, barWidth: '45%',
+      itemStyle: { color: '#1890ff', borderRadius: [4, 4, 0, 0] }
+    }]
+  })
 }
+
+const loadAdminCharts = async () => {
+  // 部门人数分布
+  const empRes = await listAllEmployees()
+  const deptMap = {}
+  empRes.data.forEach((e) => {
+    const key = e.departmentName || '未分配'
+    deptMap[key] = (deptMap[key] || 0) + 1
+  })
+  renderPie(Object.keys(deptMap).map((k) => ({ name: k, value: deptMap[k] })))
+
+  // 本月各员工实发工资
+  const payRes = await pagePayrolls({ current: 1, size: 100, month: currentMonth() })
+  const records = payRes.data.records
+  renderBar(records.map((r) => r.employeeName), records.map((r) => Number(r.netSalary)), '元')
+}
+
+const loadEmployeeCharts = async () => {
+  renderPie([
+    { name: '正常', value: empStat.normal },
+    { name: '迟到', value: empStat.late },
+    { name: '早退', value: empStat.early },
+    { name: '缺勤', value: empStat.absent }
+  ].filter((i) => i.value > 0))
+  renderBar(['正常', '迟到', '早退', '缺勤'],
+    [empStat.normal, empStat.late, empStat.early, empStat.absent], '天')
+}
+
+const resize = () => { pieChart?.resize(); barChart?.resize() }
 
 onMounted(async () => {
   updateClock()
@@ -112,76 +177,38 @@ onMounted(async () => {
   if (userStore.isAdmin) {
     const res = await getDashboardStat()
     Object.assign(stat, res.data)
+    await nextTick()
+    loadAdminCharts()
   } else {
     loadToday()
     const res = await getAttendanceStat({ month: currentMonth() })
     Object.assign(empStat, res.data)
+    await nextTick()
+    loadEmployeeCharts()
   }
+  window.addEventListener('resize', resize)
 })
 
-onUnmounted(() => clearInterval(timer))
+onUnmounted(() => {
+  clearInterval(timer)
+  window.removeEventListener('resize', resize)
+  pieChart?.dispose()
+  barChart?.dispose()
+})
 </script>
 
 <style scoped>
-.clock-card {
-  margin-bottom: 16px;
-  background: linear-gradient(135deg, #e6f7ff, #ffffff);
-}
-.clock-content {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  flex-wrap: wrap;
-  gap: 16px;
-}
-.clock-time {
-  font-size: 40px;
-  font-weight: bold;
-  color: #1890ff;
-}
-.clock-date {
-  color: #666;
-}
-.clock-status p {
-  margin: 6px 0;
-  color: #555;
-}
-.clock-btns {
-  display: flex;
-  gap: 12px;
-}
-.stat-row {
-  margin-bottom: 16px;
-}
-.stat-card {
-  margin-bottom: 16px;
-}
-.stat-card :deep(.el-card__body) {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-}
-.stat-icon {
-  width: 54px;
-  height: 54px;
-  border-radius: 10px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #fff;
-}
-.stat-value {
-  font-size: 26px;
-  font-weight: bold;
-}
-.stat-label {
-  color: #999;
-  font-size: 13px;
-}
-.welcome h3 {
-  margin-bottom: 8px;
-}
-.welcome p {
-  color: #666;
-}
+.clock-card { margin-bottom: 16px; background: linear-gradient(135deg, #e6f7ff, #ffffff); }
+.clock-content { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px; }
+.clock-time { font-size: 40px; font-weight: bold; color: #1890ff; }
+.clock-date { color: #666; }
+.clock-status p { margin: 6px 0; color: #555; }
+.clock-btns { display: flex; gap: 12px; }
+.stat-row { margin-bottom: 16px; }
+.stat-card { margin-bottom: 16px; }
+.stat-card :deep(.el-card__body) { display: flex; align-items: center; gap: 14px; }
+.stat-icon { width: 54px; height: 54px; border-radius: 10px; display: flex; align-items: center; justify-content: center; color: #fff; }
+.stat-value { font-size: 26px; font-weight: bold; }
+.stat-label { color: #999; font-size: 13px; }
+.chart { height: 300px; width: 100%; }
 </style>
