@@ -5,7 +5,9 @@ import com.example.hrms.common.BizException;
 import com.example.hrms.dto.LoginRequest;
 import com.example.hrms.dto.LoginResponse;
 import com.example.hrms.entity.SysUser;
+import com.example.hrms.entity.Tenant;
 import com.example.hrms.mapper.SysUserMapper;
+import com.example.hrms.mapper.TenantMapper;
 import com.example.hrms.security.JwtUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -19,6 +21,7 @@ import org.springframework.stereotype.Service;
 public class AuthService {
 
     private final SysUserMapper sysUserMapper;
+    private final TenantMapper tenantMapper;
     private final PasswordEncoder passwordEncoder;
     private final JwtUtil jwtUtil;
 
@@ -33,6 +36,16 @@ public class AuthService {
         }
         String token = jwtUtil.generateToken(user.getId(), user.getUsername(),
                 user.getRole(), user.getEmployeeId());
+
+        // 查询租户信息
+        String tenantName = "默认企业";
+        if (user.getTenantId() != null) {
+            Tenant tenant = tenantMapper.selectById(user.getTenantId());
+            if (tenant != null) {
+                tenantName = tenant.getTenantName();
+            }
+        }
+
         return LoginResponse.builder()
                 .token(token)
                 .userId(user.getId())
@@ -40,6 +53,8 @@ public class AuthService {
                 .realName(user.getRealName())
                 .role(user.getRole())
                 .employeeId(user.getEmployeeId())
+                .tenantId(user.getTenantId())
+                .tenantName(tenantName)
                 .build();
     }
 

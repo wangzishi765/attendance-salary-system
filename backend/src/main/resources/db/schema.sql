@@ -11,9 +11,25 @@ CREATE TABLE IF NOT EXISTS sys_user (
     real_name    VARCHAR(64),
     role         VARCHAR(20)  NOT NULL DEFAULT 'EMPLOYEE',   -- ADMIN / EMPLOYEE
     employee_id  BIGINT,                                     -- 关联员工（员工账号）
+    tenant_id    BIGINT       DEFAULT 1,                     -- 租户ID
     enabled      INT          NOT NULL DEFAULT 1,
     deleted      INT          NOT NULL DEFAULT 0,
     create_time  TIMESTAMP    DEFAULT CURRENT_TIMESTAMP
+);
+
+-- 租户表
+CREATE TABLE IF NOT EXISTS tenant (
+    id              BIGINT        AUTO_INCREMENT PRIMARY KEY,
+    tenant_code     VARCHAR(64)   NOT NULL,
+    tenant_name     VARCHAR(128)  NOT NULL,
+    contact_person  VARCHAR(64),
+    contact_phone   VARCHAR(20),
+    address         VARCHAR(255),
+    status          VARCHAR(16)   NOT NULL DEFAULT 'ACTIVE',
+    expire_time     TIMESTAMP,
+    deleted         INT           NOT NULL DEFAULT 0,
+    create_time     TIMESTAMP     DEFAULT CURRENT_TIMESTAMP,
+    update_time     TIMESTAMP     DEFAULT CURRENT_TIMESTAMP
 );
 
 -- 部门表
@@ -125,4 +141,70 @@ CREATE TABLE IF NOT EXISTS payroll (
     remark               VARCHAR(255),
     deleted              INT           NOT NULL DEFAULT 0,
     create_time          TIMESTAMP     DEFAULT CURRENT_TIMESTAMP
+);
+
+-- 工作流流程定义表
+CREATE TABLE IF NOT EXISTS workflow_process (
+    id              BIGINT        AUTO_INCREMENT PRIMARY KEY,
+    process_code    VARCHAR(64)   NOT NULL,
+    process_name    VARCHAR(128)  NOT NULL,
+    description     VARCHAR(255),
+    nodes_config    TEXT,                              -- 审批节点配置（JSON）
+    status          VARCHAR(16)   NOT NULL DEFAULT 'ACTIVE', -- ACTIVE / DISABLED
+    deleted         INT           NOT NULL DEFAULT 0,
+    create_time     TIMESTAMP     DEFAULT CURRENT_TIMESTAMP,
+    update_time     TIMESTAMP     DEFAULT CURRENT_TIMESTAMP
+);
+
+-- 工作流实例表
+CREATE TABLE IF NOT EXISTS workflow_instance (
+    id              BIGINT        AUTO_INCREMENT PRIMARY KEY,
+    process_id      BIGINT        NOT NULL,
+    process_code    VARCHAR(64)   NOT NULL,
+    process_name    VARCHAR(128)  NOT NULL,
+    initiator_id    BIGINT        NOT NULL,
+    initiator_name  VARCHAR(64),
+    business_type   VARCHAR(32),                       -- LEAVE / OVERTIME 等
+    business_id     BIGINT,
+    title           VARCHAR(255),
+    current_node    INT           NOT NULL DEFAULT 0,
+    status          VARCHAR(16)   NOT NULL DEFAULT 'PENDING', -- PENDING / APPROVED / REJECTED / CANCELLED
+    start_time      TIMESTAMP,
+    end_time        TIMESTAMP,
+    deleted         INT           NOT NULL DEFAULT 0,
+    create_time     TIMESTAMP     DEFAULT CURRENT_TIMESTAMP
+);
+
+-- 工作流审批任务表
+CREATE TABLE IF NOT EXISTS workflow_task (
+    id              BIGINT        AUTO_INCREMENT PRIMARY KEY,
+    instance_id     BIGINT        NOT NULL,
+    node_name       VARCHAR(128),
+    node_index      INT           NOT NULL DEFAULT 0,
+    approver_role   VARCHAR(20),
+    approver_id     BIGINT,
+    approver_name   VARCHAR(64),
+    status          VARCHAR(16)   NOT NULL DEFAULT 'PENDING', -- PENDING / APPROVED / REJECTED
+    comment         VARCHAR(500),
+    approve_time    TIMESTAMP,
+    deleted         INT           NOT NULL DEFAULT 0,
+    create_time     TIMESTAMP     DEFAULT CURRENT_TIMESTAMP
+);
+
+-- 操作日志表
+CREATE TABLE IF NOT EXISTS operation_log (
+    id              BIGINT        AUTO_INCREMENT PRIMARY KEY,
+    user_id         BIGINT,
+    username        VARCHAR(64),
+    real_name       VARCHAR(64),
+    module          VARCHAR(64),
+    operation       VARCHAR(32),
+    description     VARCHAR(255),
+    method          VARCHAR(255),
+    params          TEXT,
+    ip              VARCHAR(64),
+    status          VARCHAR(16)   NOT NULL DEFAULT 'SUCCESS', -- SUCCESS / FAIL
+    error_msg       VARCHAR(500),
+    cost_time       BIGINT,
+    operation_time  TIMESTAMP     DEFAULT CURRENT_TIMESTAMP
 );

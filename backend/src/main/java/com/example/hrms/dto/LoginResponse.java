@@ -12,4 +12,6 @@ public class LoginResponse {
     private String realName;
     private String role;
     private Long employeeId;
+    private Long tenantId;
+    private String tenantName;
 }

@@ -65,6 +65,30 @@ const routes = [
         name: 'SystemMonitor',
         component: () => import('@/views/SystemMonitor.vue'),
         meta: { title: '系统监控', icon: 'Monitor', roles: ['ADMIN'] }
+      },
+      {
+        path: 'report',
+        name: 'Report',
+        component: () => import('@/views/Report.vue'),
+        meta: { title: '统计报表', icon: 'DataLine', roles: ['ADMIN', 'HR'] }
+      },
+      {
+        path: 'workflow',
+        name: 'Workflow',
+        component: () => import('@/views/Workflow.vue'),
+        meta: { title: '工作流审批', icon: 'Connection' }
+      },
+      {
+        path: 'tenant',
+        name: 'Tenant',
+        component: () => import('@/views/Tenant.vue'),
+        meta: { title: '租户管理', icon: 'OfficeBuilding', roles: ['ADMIN'] }
+      },
+      {
+        path: 'operation-log',
+        name: 'OperationLog',
+        component: () => import('@/views/OperationLog.vue'),
+        meta: { title: '操作日志', icon: 'Document', roles: ['ADMIN'] }
       }
     ]
   },

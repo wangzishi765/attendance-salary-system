@@ -31,6 +31,8 @@ public class DataInitializer implements CommandLineRunner {
     private final LeaveRecordMapper leaveRecordMapper;
     private final OvertimeRecordMapper overtimeRecordMapper;
     private final SalaryRuleMapper salaryRuleMapper;
+    private final WorkflowProcessMapper workflowProcessMapper;
+    private final TenantMapper tenantMapper;
     private final PasswordEncoder passwordEncoder;
 
     @Override
@@ -40,6 +42,16 @@ public class DataInitializer implements CommandLineRunner {
             return; // 已初始化，跳过
         }
         System.out.println(">>> 首次启动，初始化演示数据...");
+
+        // 0. 默认租户
+        Tenant defaultTenant = new Tenant();
+        defaultTenant.setTenantCode("DEFAULT");
+        defaultTenant.setTenantName("默认企业");
+        defaultTenant.setContactPerson("系统管理员");
+        defaultTenant.setContactPhone("400-000-0000");
+        defaultTenant.setAddress("四川省成都市");
+        defaultTenant.setStatus("ACTIVE");
+        tenantMapper.insert(defaultTenant);
 
         // 1. 部门
         Department d1 = dept("技术部", "负责产品研发与技术支持");
@@ -123,6 +135,25 @@ public class DataInitializer implements CommandLineRunner {
         ot.setStatus("APPROVED");
         overtimeRecordMapper.insert(ot);
 
+        // 8. 工作流流程定义
+        // 请假审批流程：HR审批 → 管理员审批
+        WorkflowProcess leaveProcess = new WorkflowProcess();
+        leaveProcess.setProcessCode("LEAVE_APPROVAL");
+        leaveProcess.setProcessName("请假审批流程");
+        leaveProcess.setDescription("员工请假需经人事专员和管理员两级审批");
+        leaveProcess.setNodesConfig("[{\"nodeName\":\"人事专员审批\",\"role\":\"HR\"},{\"nodeName\":\"管理员审批\",\"role\":\"ADMIN\"}]");
+        leaveProcess.setStatus("ACTIVE");
+        workflowProcessMapper.insert(leaveProcess);
+
+        // 加班审批流程：HR审批
+        WorkflowProcess overtimeProcess = new WorkflowProcess();
+        overtimeProcess.setProcessCode("OVERTIME_APPROVAL");
+        overtimeProcess.setProcessName("加班审批流程");
+        overtimeProcess.setDescription("员工加班需经人事专员审批");
+        overtimeProcess.setNodesConfig("[{\"nodeName\":\"人事专员审批\",\"role\":\"HR\"}]");
+        overtimeProcess.setStatus("ACTIVE");
+        workflowProcessMapper.insert(overtimeProcess);
+
         System.out.println(">>> 演示数据初始化完成。");
     }
 
@@ -158,6 +189,7 @@ public class DataInitializer implements CommandLineRunner {
         u.setRealName(realName);
         u.setRole(role);
         u.setEmployeeId(employeeId);
+        u.setTenantId(1L); // 默认租户
         u.setEnabled(1);
         sysUserMapper.insert(u);
     }

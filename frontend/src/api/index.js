@@ -67,3 +67,29 @@ export const exportPayroll = (params) => request.get('/api/payrolls/export', { p
 
 // ==================== 系统监控 ====================
 export const getSystemMonitor = () => request.get('/api/system/monitor')
+
+// ==================== 统计报表 ====================
+export const getEmployeeReport = () => request.get('/api/reports/employee')
+export const getAttendanceReport = (month) => request.get('/api/reports/attendance', { params: { month } })
+export const getSalaryReport = (month) => request.get('/api/reports/salary', { params: { month } })
+
+// ==================== 工作流 ====================
+export const getWorkflowProcesses = () => request.get('/api/workflow/processes')
+export const startWorkflow = (data) => request.post('/api/workflow/start', data)
+export const approveWorkflowTask = (id, status, comment) => request.put(`/api/workflow/tasks/${id}/approve`, { status, comment })
+export const getWorkflowPending = (current, size) => request.get('/api/workflow/tasks/pending', { params: { current, size } })
+export const getWorkflowApproved = (current, size) => request.get('/api/workflow/tasks/approved', { params: { current, size } })
+export const getWorkflowStarted = (current, size) => request.get('/api/workflow/instances/my', { params: { current, size } })
+export const getWorkflowInstance = (id) => request.get(`/api/workflow/instances/${id}`)
+export const getWorkflowHistory = (id) => request.get(`/api/workflow/instances/${id}/history`)
+
+// ==================== 租户管理 ====================
+export const pageTenants = (current, size, keyword) => request.get('/api/tenants', { params: { current, size, keyword } })
+export const listAllTenants = () => request.get('/api/tenants/all')
+export const getTenant = (id) => request.get(`/api/tenants/${id}`)
+export const createTenant = (data) => request.post('/api/tenants', data)
+export const updateTenant = (data) => request.put('/api/tenants', data)
+export const deleteTenant = (id) => request.delete(`/api/tenants/${id}`)
+
+// ==================== 操作日志 ====================
+export const pageOperationLogs = (current, size, module, username, status) => request.get('/api/operation-logs', { params: { current, size, module, username, status } })

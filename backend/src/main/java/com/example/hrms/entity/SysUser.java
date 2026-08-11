@@ -20,6 +20,8 @@ public class SysUser {
     private String role;
     /** 关联员工 id（员工账号） */
     private Long employeeId;
+    /** 租户ID */
+    private Long tenantId;
     private Integer enabled;
     @TableLogic
     private Integer deleted;
