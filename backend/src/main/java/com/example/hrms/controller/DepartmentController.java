@@ -17,11 +17,13 @@ public class DepartmentController {
     private final DepartmentService departmentService;
 
     @GetMapping
+    @PreAuthorize("hasRole('ADMIN')")
     public Result<List<Department>> list() {
         return Result.success(departmentService.list());
     }
 
     @GetMapping("/tree")
+    @PreAuthorize("hasRole('ADMIN')")
     public Result<List<Department>> tree() {
         return Result.success(departmentService.listTree());
     }

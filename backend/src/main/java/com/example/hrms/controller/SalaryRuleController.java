@@ -15,6 +15,7 @@ public class SalaryRuleController {
     private final SalaryRuleService salaryRuleService;
 
     @GetMapping
+    @PreAuthorize("hasRole('ADMIN')")
     public Result<SalaryRule> current() {
         return Result.success(salaryRuleService.current());
     }
