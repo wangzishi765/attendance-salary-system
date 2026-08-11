@@ -20,6 +20,7 @@ public class EmployeeController {
     private final EmployeeService employeeService;
 
     @GetMapping
+    @PreAuthorize("hasAnyRole('ADMIN', 'HR')")
     public Result<Page<Employee>> page(
             @RequestParam(defaultValue = "1") long current,
             @RequestParam(defaultValue = "10") long size,
@@ -29,11 +30,13 @@ public class EmployeeController {
     }
 
     @GetMapping("/all")
+    @PreAuthorize("hasAnyRole('ADMIN', 'HR')")
     public Result<List<Employee>> all() {
         return Result.success(employeeService.listAll());
     }
 
     @GetMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'HR')")
     public Result<Employee> get(@PathVariable Long id) {
         return Result.success(employeeService.getById(id));
     }
