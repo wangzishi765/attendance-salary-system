@@ -64,3 +64,6 @@ export const pagePayrolls = (params) => request.get('/api/payrolls', { params })
 export const markPayrollPaid = (id) => request.put(`/api/payrolls/${id}/pay`)
 export const deletePayroll = (id) => request.delete(`/api/payrolls/${id}`)
 export const exportPayroll = (params) => request.get('/api/payrolls/export', { params, responseType: 'blob' })
+
+// ==================== 系统监控 ====================
+export const getSystemMonitor = () => request.get('/api/system/monitor')

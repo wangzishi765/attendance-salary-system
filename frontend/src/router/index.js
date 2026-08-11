@@ -59,6 +59,12 @@ const routes = [
         name: 'SalaryRule',
         component: () => import('@/views/SalaryRule.vue'),
         meta: { title: '薪资规则', icon: 'Setting', roles: ['ADMIN'] }
+      },
+      {
+        path: 'system-monitor',
+        name: 'SystemMonitor',
+        component: () => import('@/views/SystemMonitor.vue'),
+        meta: { title: '系统监控', icon: 'Monitor', roles: ['ADMIN'] }
       }
     ]
   },
