@@ -123,10 +123,10 @@ public class ReportService {
         int normal = 0, late = 0, early = 0, absent = 0;
         for (Attendance att : attendances) {
             String status = att.getStatus();
-            if ("正常".equals(status)) normal++;
-            else if ("迟到".equals(status)) late++;
-            else if ("早退".equals(status)) early++;
-            else if ("缺勤".equals(status)) absent++;
+            if ("NORMAL".equals(status)) normal++;
+            else if ("LATE".equals(status)) late++;
+            else if ("EARLY".equals(status)) early++;
+            else if ("ABSENT".equals(status)) absent++;
         }
         Map<String, Object> statusStat = new HashMap<>();
         statusStat.put("normal", normal);
@@ -148,9 +148,9 @@ public class ReportService {
             for (Attendance att : attendances) {
                 if (empIds.contains(att.getEmployeeId())) {
                     String status = att.getStatus();
-                    if ("正常".equals(status)) deptNormal++;
-                    else if ("迟到".equals(status)) deptLate++;
-                    else if ("缺勤".equals(status)) deptAbsent++;
+                    if ("NORMAL".equals(status)) deptNormal++;
+                    else if ("LATE".equals(status)) deptLate++;
+                    else if ("ABSENT".equals(status)) deptAbsent++;
                 }
             }
             Map<String, Object> item = new HashMap<>();

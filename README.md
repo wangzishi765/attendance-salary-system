@@ -185,6 +185,9 @@
 | **工作流引擎** | **多级审批流程定义、发起流程、待办/已办/我发起的、审批历史时间线、支持 HR→管理员两级审批** |
 | **多租户支持** | **租户（企业）管理、用户租户关联、登录返回租户信息、支持多企业共用一套系统（仅管理员）** |
 | **操作日志** | **AOP 自动记录所有写操作、操作人/模块/IP/耗时/状态、支持按模块/操作人/状态筛选（仅管理员）** |
+| **消息通知** | **站内消息中心、系统/审批/考勤/薪资四种类型、顶部未读徽章、标记已读/全部已读、30秒自动刷新** |
+| **数据备份** | **H2 BACKUP 命令安全备份、备份列表/下载/删除、ZIP 格式、运行时可备份（仅管理员）** |
+| **租户数据隔离** | **MyBatis-Plus 租户插件自动隔离、所有业务表 tenant_id、JWT 自动设置租户上下文、不同租户数据完全隔离** |
 | 系统监控 | **实时监控系统运行状态**：操作系统/JVM/磁盘/应用信息、内存使用率进度条、自动刷新（仅管理员） |
 | 数据导入导出 | 员工 Excel 导入、考勤 Excel 导入、工资单 Excel 导出 |
 
@@ -360,6 +363,14 @@ attendance-salary-system/
 | GET | `/api/workflow/instances/{id}/history` | 审批历史 |
 | GET/POST/PUT/DELETE | `/api/tenants` | 租户管理（仅管理员） |
 | GET | `/api/operation-logs` | 操作日志（仅管理员） |
+| GET | `/api/notifications` | 消息通知列表 |
+| GET | `/api/notifications/unread-count` | 未读消息数量 |
+| PUT | `/api/notifications/{id}/read` | 标记消息已读 |
+| PUT | `/api/notifications/read-all` | 全部标记已读 |
+| POST | `/api/backup/create` | 创建数据备份（仅管理员） |
+| GET | `/api/backup/list` | 备份文件列表（仅管理员） |
+| GET | `/api/backup/download/{name}` | 下载备份文件（仅管理员） |
+| DELETE | `/api/backup/{name}` | 删除备份文件（仅管理员） |
 
 > 除登录接口外，所有 `/api/**` 需在请求头携带 `Authorization: Bearer <token>`。
 
@@ -542,6 +553,9 @@ attendance-salary-system/
 | **Workflow Engine** | **Multi-level approval process definition, start process, pending/approved/started, approval history timeline, supports HR→Admin two-level approval** |
 | **Multi-tenant Support** | **Tenant (enterprise) management, user-tenant association, login returns tenant info, supports multi-enterprise sharing (admin only)** |
 | **Operation Log** | **AOP auto-record all write operations, operator/module/IP/duration/status, supports filtering by module/operator/status (admin only)** |
+| **Notification** | **In-app notification center, 4 types (system/approval/attendance/payroll), top bar unread badge, mark read/mark all read, 30s auto refresh** |
+| **Data Backup** | **Secure backup using H2 BACKUP command, backup list/download/delete, ZIP format, works while running (admin only)** |
+| **Tenant Isolation** | **MyBatis-Plus tenant plugin auto isolation, tenant_id on all business tables, JWT auto sets tenant context, complete data isolation between tenants** |
 | System Monitor | **Real-time system monitoring**: OS/JVM/disk/app info, memory usage progress bar, auto-refresh (admin only) |
 | Data Import/Export | Employee Excel import, attendance Excel import, payroll Excel export |
 
@@ -717,6 +731,14 @@ attendance-salary-system/
 | GET | `/api/workflow/instances/{id}/history` | Approval history |
 | GET/POST/PUT/DELETE | `/api/tenants` | Tenant management (admin only) |
 | GET | `/api/operation-logs` | Operation logs (admin only) |
+| GET | `/api/notifications` | Notification list |
+| GET | `/api/notifications/unread-count` | Unread notification count |
+| PUT | `/api/notifications/{id}/read` | Mark notification as read |
+| PUT | `/api/notifications/read-all` | Mark all as read |
+| POST | `/api/backup/create` | Create data backup (admin only) |
+| GET | `/api/backup/list` | Backup file list (admin only) |
+| GET | `/api/backup/download/{name}` | Download backup file (admin only) |
+| DELETE | `/api/backup/{name}` | Delete backup file (admin only) |
 
 > Except login API, all `/api/**` require `Authorization: Bearer <token>` in request header.
 

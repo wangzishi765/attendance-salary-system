@@ -32,7 +32,8 @@ public class ReportController {
      */
     @GetMapping("/attendance")
     @PreAuthorize("hasAnyRole('ADMIN', 'HR')")
-    public Result<Map<String, Object>> attendanceReport(@RequestParam String month) {
+    public Result<Map<String, Object>> attendanceReport(
+            @RequestParam(required = false, defaultValue = "2026-08") String month) {
         return Result.success(reportService.attendanceReport(month));
     }
 
@@ -41,7 +42,8 @@ public class ReportController {
      */
     @GetMapping("/salary")
     @PreAuthorize("hasAnyRole('ADMIN', 'HR')")
-    public Result<Map<String, Object>> salaryReport(@RequestParam String month) {
+    public Result<Map<String, Object>> salaryReport(
+            @RequestParam(required = false, defaultValue = "2026-08") String month) {
         return Result.success(reportService.salaryReport(month));
     }
 }
