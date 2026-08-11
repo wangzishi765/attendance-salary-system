@@ -4,10 +4,11 @@
       <template #header>
         <span>薪资规则配置</span>
       </template>
-      <el-form :model="form" label-width="160px">
+      <el-form :model="form" label-width="180px">
         <el-form-item label="规则名称">
           <el-input v-model="form.name" style="width: 260px" />
         </el-form-item>
+        <el-divider content-position="left">考勤与加班</el-divider>
         <el-form-item label="每次迟到扣款（元）">
           <el-input-number v-model="form.lateDeduct" :min="0" :step="10" />
         </el-form-item>
@@ -23,12 +24,29 @@
         <el-form-item label="全勤奖（元）">
           <el-input-number v-model="form.fullAttendanceBonus" :min="0" :step="50" />
         </el-form-item>
+        <el-divider content-position="left">社保与公积金</el-divider>
+        <el-form-item label="社保个人缴纳比例">
+          <el-input-number v-model="form.socialSecurityRate" :min="0" :max="1" :step="0.005" :precision="4" />
+          <span style="margin-left: 8px; color: #999">（如 0.105 表示 10.5%）</span>
+        </el-form-item>
+        <el-form-item label="公积金个人缴纳比例">
+          <el-input-number v-model="form.housingFundRate" :min="0" :max="1" :step="0.01" :precision="4" />
+          <span style="margin-left: 8px; color: #999">（如 0.07 表示 7%）</span>
+        </el-form-item>
+        <el-divider content-position="left">个税计算</el-divider>
+        <el-form-item label="个税起征点（元）">
+          <el-input-number v-model="form.taxThreshold" :min="0" :step="500" />
+        </el-form-item>
+        <el-form-item label="专项附加扣除（元/月）">
+          <el-input-number v-model="form.specialDeduction" :min="0" :step="100" />
+          <span style="margin-left: 8px; color: #999">（子女教育/赡养老人等）</span>
+        </el-form-item>
         <el-form-item>
           <el-button type="primary" @click="save">保存规则</el-button>
         </el-form-item>
       </el-form>
       <el-alert type="info" :closable="false" show-icon
-        title="说明：应发 = 基本工资 + 全勤奖 + 加班费 − 迟到/缺勤/事假扣款；个税按超过5000部分的3%简化计算；实发 = 应发 − 个税。全勤奖需当月无迟到/早退/缺勤/请假。" />
+        title="计算规则：应发 = 基本工资 + 全勤奖 + 加班费 − 迟到/缺勤/事假扣款；社保 = 基本工资 × 社保比例；公积金 = 基本工资 × 公积金比例；个税 = (应发 − 社保 − 公积金 − 专项附加扣除 − 起征点) × 3%；实发 = 应发 − 社保 − 公积金 − 个税。" />
     </el-card>
   </div>
 </template>
@@ -40,7 +58,9 @@ import { getSalaryRule, updateSalaryRule } from '@/api'
 
 const form = reactive({
   name: '默认薪资规则', lateDeduct: 50, absentDeduct: 200,
-  leaveDeduct: 100, overtimeRate: 30, fullAttendanceBonus: 300
+  leaveDeduct: 100, overtimeRate: 30, fullAttendanceBonus: 300,
+  socialSecurityRate: 0.105, housingFundRate: 0.07,
+  taxThreshold: 5000, specialDeduction: 0
 })
 
 const load = async () => {

@@ -95,27 +95,34 @@ CREATE TABLE IF NOT EXISTS salary_rule (
     leave_deduct         DECIMAL(12,2) NOT NULL DEFAULT 100,  -- 每天事假扣款
     overtime_rate        DECIMAL(12,2) NOT NULL DEFAULT 30,   -- 每小时加班费
     full_attendance_bonus DECIMAL(12,2) NOT NULL DEFAULT 300, -- 全勤奖
+    social_security_rate DECIMAL(6,4)  NOT NULL DEFAULT 0.105, -- 社保个人缴纳比例（10.5%）
+    housing_fund_rate    DECIMAL(6,4)  NOT NULL DEFAULT 0.07,  -- 公积金个人缴纳比例（7%）
+    tax_threshold        DECIMAL(12,2) NOT NULL DEFAULT 5000,  -- 个税起征点
+    special_deduction    DECIMAL(12,2) NOT NULL DEFAULT 0,     -- 专项附加扣除默认值
     deleted              INT           NOT NULL DEFAULT 0,
     create_time          TIMESTAMP     DEFAULT CURRENT_TIMESTAMP
 );
 
 -- 工资单表
 CREATE TABLE IF NOT EXISTS payroll (
-    id                BIGINT        AUTO_INCREMENT PRIMARY KEY,
-    employee_id       BIGINT        NOT NULL,
-    salary_month      VARCHAR(7)    NOT NULL,               -- 例如 2026-08
-    base_salary       DECIMAL(12,2) NOT NULL DEFAULT 0,
-    attendance_bonus  DECIMAL(12,2) NOT NULL DEFAULT 0,     -- 全勤奖
-    overtime_pay      DECIMAL(12,2) NOT NULL DEFAULT 0,     -- 加班费
-    late_deduct       DECIMAL(12,2) NOT NULL DEFAULT 0,
-    absent_deduct     DECIMAL(12,2) NOT NULL DEFAULT 0,
-    leave_deduct      DECIMAL(12,2) NOT NULL DEFAULT 0,
-    other_deduct      DECIMAL(12,2) NOT NULL DEFAULT 0,
-    gross_salary      DECIMAL(12,2) NOT NULL DEFAULT 0,     -- 应发
-    tax               DECIMAL(12,2) NOT NULL DEFAULT 0,     -- 简化个税
-    net_salary        DECIMAL(12,2) NOT NULL DEFAULT 0,     -- 实发
-    status            VARCHAR(16)   NOT NULL DEFAULT 'GENERATED', -- GENERATED / PAID
-    remark            VARCHAR(255),
-    deleted           INT           NOT NULL DEFAULT 0,
-    create_time       TIMESTAMP     DEFAULT CURRENT_TIMESTAMP
+    id                   BIGINT        AUTO_INCREMENT PRIMARY KEY,
+    employee_id          BIGINT        NOT NULL,
+    salary_month         VARCHAR(7)    NOT NULL,               -- 例如 2026-08
+    base_salary          DECIMAL(12,2) NOT NULL DEFAULT 0,
+    attendance_bonus     DECIMAL(12,2) NOT NULL DEFAULT 0,     -- 全勤奖
+    overtime_pay         DECIMAL(12,2) NOT NULL DEFAULT 0,     -- 加班费
+    late_deduct          DECIMAL(12,2) NOT NULL DEFAULT 0,
+    absent_deduct        DECIMAL(12,2) NOT NULL DEFAULT 0,
+    leave_deduct         DECIMAL(12,2) NOT NULL DEFAULT 0,
+    social_security_deduct DECIMAL(12,2) NOT NULL DEFAULT 0,   -- 社保扣除（个人部分）
+    housing_fund_deduct  DECIMAL(12,2) NOT NULL DEFAULT 0,     -- 公积金扣除（个人部分）
+    special_deduction    DECIMAL(12,2) NOT NULL DEFAULT 0,     -- 专项附加扣除
+    other_deduct         DECIMAL(12,2) NOT NULL DEFAULT 0,
+    gross_salary         DECIMAL(12,2) NOT NULL DEFAULT 0,     -- 应发
+    tax                  DECIMAL(12,2) NOT NULL DEFAULT 0,     -- 个税
+    net_salary           DECIMAL(12,2) NOT NULL DEFAULT 0,     -- 实发
+    status               VARCHAR(16)   NOT NULL DEFAULT 'GENERATED', -- GENERATED / PAID
+    remark               VARCHAR(255),
+    deleted              INT           NOT NULL DEFAULT 0,
+    create_time          TIMESTAMP     DEFAULT CURRENT_TIMESTAMP
 );

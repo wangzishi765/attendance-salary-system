@@ -25,6 +25,14 @@ public class SalaryRule {
     private BigDecimal overtimeRate;
     /** 全勤奖 */
     private BigDecimal fullAttendanceBonus;
+    /** 社保个人缴纳比例（如0.105表示10.5%） */
+    private BigDecimal socialSecurityRate;
+    /** 公积金个人缴纳比例（如0.07表示7%） */
+    private BigDecimal housingFundRate;
+    /** 个税起征点 */
+    private BigDecimal taxThreshold;
+    /** 专项附加扣除默认值（子女教育/赡养老人等） */
+    private BigDecimal specialDeduction;
     @TableLogic
     private Integer deleted;
     @TableField(fill = FieldFill.INSERT)

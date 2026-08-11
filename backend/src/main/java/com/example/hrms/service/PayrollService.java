@@ -29,8 +29,6 @@ public class PayrollService {
     private final OvertimeRecordMapper overtimeRecordMapper;
     private final SalaryRuleService salaryRuleService;
 
-    /** 个税起征点 */
-    private static final BigDecimal TAX_THRESHOLD = new BigDecimal("5000");
     /** 简化个税税率 3% */
     private static final BigDecimal TAX_RATE = new BigDecimal("0.03");
 
@@ -101,18 +99,43 @@ public class PayrollService {
         BigDecimal bonus = (lateCount == 0 && earlyCount == 0 && absentCount == 0 && leaveTotal == 0)
                 ? rule.getFullAttendanceBonus() : BigDecimal.ZERO;
 
+        // 应发工资 = 基本工资 + 全勤奖 + 加班费 - 各项扣款
         BigDecimal gross = base.add(bonus).add(overtimePay)
                 .subtract(lateDeduct).subtract(absentDeduct).subtract(leaveDeduct);
         if (gross.compareTo(BigDecimal.ZERO) < 0) {
             gross = BigDecimal.ZERO;
         }
 
-        // 简化个税
-        BigDecimal tax = BigDecimal.ZERO;
-        if (gross.compareTo(TAX_THRESHOLD) > 0) {
-            tax = gross.subtract(TAX_THRESHOLD).multiply(TAX_RATE).setScale(2, RoundingMode.HALF_UP);
+        // 社保扣除（个人部分）= 基本工资 × 社保比例
+        BigDecimal ssRate = rule.getSocialSecurityRate() == null ? BigDecimal.ZERO : rule.getSocialSecurityRate();
+        BigDecimal socialSecurityDeduct = base.multiply(ssRate).setScale(2, RoundingMode.HALF_UP);
+
+        // 公积金扣除（个人部分）= 基本工资 × 公积金比例
+        BigDecimal hfRate = rule.getHousingFundRate() == null ? BigDecimal.ZERO : rule.getHousingFundRate();
+        BigDecimal housingFundDeduct = base.multiply(hfRate).setScale(2, RoundingMode.HALF_UP);
+
+        // 专项附加扣除
+        BigDecimal specialDeduction = rule.getSpecialDeduction() == null ? BigDecimal.ZERO : rule.getSpecialDeduction();
+
+        // 个税起征点
+        BigDecimal taxThreshold = rule.getTaxThreshold() == null ? new BigDecimal("5000") : rule.getTaxThreshold();
+
+        // 个税应纳税所得额 = 应发工资 - 社保 - 公积金 - 专项附加扣除 - 起征点
+        BigDecimal taxableIncome = gross.subtract(socialSecurityDeduct)
+                .subtract(housingFundDeduct)
+                .subtract(specialDeduction)
+                .subtract(taxThreshold);
+        if (taxableIncome.compareTo(BigDecimal.ZERO) < 0) {
+            taxableIncome = BigDecimal.ZERO;
         }
-        BigDecimal net = gross.subtract(tax);
+
+        // 个税 = 应纳税所得额 × 3%
+        BigDecimal tax = taxableIncome.multiply(TAX_RATE).setScale(2, RoundingMode.HALF_UP);
+
+        // 实发工资 = 应发工资 - 社保 - 公积金 - 个税
+        BigDecimal net = gross.subtract(socialSecurityDeduct)
+                .subtract(housingFundDeduct)
+                .subtract(tax);
 
         Payroll p = new Payroll();
         p.setEmployeeId(emp.getId());
@@ -123,15 +146,20 @@ public class PayrollService {
         p.setLateDeduct(lateDeduct);
         p.setAbsentDeduct(absentDeduct);
         p.setLeaveDeduct(leaveDeduct);
+        p.setSocialSecurityDeduct(socialSecurityDeduct);
+        p.setHousingFundDeduct(housingFundDeduct);
+        p.setSpecialDeduction(specialDeduction);
         p.setOtherDeduct(BigDecimal.ZERO);
         p.setGrossSalary(gross);
         p.setTax(tax);
         p.setNetSalary(net);
         p.setStatus("GENERATED");
-        p.setRemark(String.format("迟到%d次,早退%d次,缺勤%d天,事假%s天,加班%s小时",
+        p.setRemark(String.format("迟到%d次,早退%d次,缺勤%d天,事假%s天,加班%s小时,社保%s,公积金%s",
                 lateCount, earlyCount, absentCount,
                 personalLeaveDays.stripTrailingZeros().toPlainString(),
-                overtimeHours.stripTrailingZeros().toPlainString()));
+                overtimeHours.stripTrailingZeros().toPlainString(),
+                socialSecurityDeduct.stripTrailingZeros().toPlainString(),
+                housingFundDeduct.stripTrailingZeros().toPlainString()));
         return p;
     }
 

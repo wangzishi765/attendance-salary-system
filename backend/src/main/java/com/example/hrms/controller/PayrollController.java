@@ -75,7 +75,8 @@ public class PayrollController {
         try (Workbook workbook = new XSSFWorkbook()) {
             Sheet sheet = workbook.createSheet("工资单");
             String[] headers = {"月份", "员工", "部门", "基本工资", "全勤奖", "加班费",
-                    "迟到扣款", "缺勤扣款", "事假扣款", "应发工资", "个税", "实发工资", "状态", "说明"};
+                    "迟到扣款", "缺勤扣款", "事假扣款", "社保扣除", "公积金扣除", "专项附加扣除",
+                    "应发工资", "个税", "实发工资", "状态", "说明"};
 
             // 表头样式
             CellStyle headerStyle = workbook.createCellStyle();
@@ -105,6 +106,9 @@ public class PayrollController {
                 row.createCell(c++).setCellValue(num(p.getLateDeduct()));
                 row.createCell(c++).setCellValue(num(p.getAbsentDeduct()));
                 row.createCell(c++).setCellValue(num(p.getLeaveDeduct()));
+                row.createCell(c++).setCellValue(num(p.getSocialSecurityDeduct()));
+                row.createCell(c++).setCellValue(num(p.getHousingFundDeduct()));
+                row.createCell(c++).setCellValue(num(p.getSpecialDeduction()));
                 row.createCell(c++).setCellValue(num(p.getGrossSalary()));
                 row.createCell(c++).setCellValue(num(p.getTax()));
                 row.createCell(c++).setCellValue(num(p.getNetSalary()));

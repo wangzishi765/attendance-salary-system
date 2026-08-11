@@ -21,7 +21,9 @@
         <el-table-column prop="baseSalary" label="基本工资" width="100" />
         <el-table-column prop="attendanceBonus" label="全勤奖" width="90" />
         <el-table-column prop="overtimePay" label="加班费" width="90" />
-        <el-table-column label="扣款合计" width="100">
+        <el-table-column prop="socialSecurityDeduct" label="社保" width="90" />
+        <el-table-column prop="housingFundDeduct" label="公积金" width="90" />
+        <el-table-column label="考勤扣款" width="100">
           <template #default="{ row }">{{ (Number(row.lateDeduct) + Number(row.absentDeduct) + Number(row.leaveDeduct) + Number(row.otherDeduct)).toFixed(2) }}</template>
         </el-table-column>
         <el-table-column prop="grossSalary" label="应发" width="100" />
@@ -57,7 +59,10 @@
         <el-descriptions-item label="迟到扣款">- {{ current.lateDeduct }}</el-descriptions-item>
         <el-descriptions-item label="缺勤扣款">- {{ current.absentDeduct }}</el-descriptions-item>
         <el-descriptions-item label="事假扣款">- {{ current.leaveDeduct }}</el-descriptions-item>
-        <el-descriptions-item label="应发工资">{{ current.grossSalary }}</el-descriptions-item>
+        <el-descriptions-item label="应发工资"><b>{{ current.grossSalary }}</b></el-descriptions-item>
+        <el-descriptions-item label="社保（个人）">- {{ current.socialSecurityDeduct }}</el-descriptions-item>
+        <el-descriptions-item label="公积金（个人）">- {{ current.housingFundDeduct }}</el-descriptions-item>
+        <el-descriptions-item label="专项附加扣除">- {{ current.specialDeduction }}</el-descriptions-item>
         <el-descriptions-item label="个人所得税">- {{ current.tax }}</el-descriptions-item>
         <el-descriptions-item label="实发工资"><b style="color:#f5222d">{{ current.netSalary }}</b></el-descriptions-item>
         <el-descriptions-item label="说明">{{ current.remark }}</el-descriptions-item>

@@ -23,6 +23,12 @@ public class Payroll {
     private BigDecimal lateDeduct;
     private BigDecimal absentDeduct;
     private BigDecimal leaveDeduct;
+    /** 社保扣除（个人部分） */
+    private BigDecimal socialSecurityDeduct;
+    /** 公积金扣除（个人部分） */
+    private BigDecimal housingFundDeduct;
+    /** 专项附加扣除 */
+    private BigDecimal specialDeduction;
     private BigDecimal otherDeduct;
     private BigDecimal grossSalary;
     private BigDecimal tax;

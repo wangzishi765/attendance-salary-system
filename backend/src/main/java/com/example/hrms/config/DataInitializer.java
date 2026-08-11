@@ -73,6 +73,10 @@ public class DataInitializer implements CommandLineRunner {
         rule.setLeaveDeduct(new BigDecimal("100"));
         rule.setOvertimeRate(new BigDecimal("30"));
         rule.setFullAttendanceBonus(new BigDecimal("300"));
+        rule.setSocialSecurityRate(new BigDecimal("0.105"));  // 社保个人缴纳比例 10.5%
+        rule.setHousingFundRate(new BigDecimal("0.07"));        // 公积金个人缴纳比例 7%
+        rule.setTaxThreshold(new BigDecimal("5000"));           // 个税起征点
+        rule.setSpecialDeduction(new BigDecimal("0"));          // 专项附加扣除默认值
         salaryRuleMapper.insert(rule);
 
         // 5. 演示考勤（本月前 5 个工作日，为张三、李四生成）
