@@ -33,6 +33,8 @@ public class SalaryRule {
     private BigDecimal taxThreshold;
     /** 专项附加扣除默认值（子女教育/赡养老人等） */
     private BigDecimal specialDeduction;
+    private Long tenantId;
+
     @TableLogic
     private Integer deleted;
     @TableField(fill = FieldFill.INSERT)

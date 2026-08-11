@@ -79,6 +79,12 @@ const routes = [
         meta: { title: '工作流审批', icon: 'Connection' }
       },
       {
+        path: 'notification',
+        name: 'Notification',
+        component: () => import('@/views/Notification.vue'),
+        meta: { title: '消息通知', icon: 'Bell' }
+      },
+      {
         path: 'tenant',
         name: 'Tenant',
         component: () => import('@/views/Tenant.vue'),
@@ -89,6 +95,12 @@ const routes = [
         name: 'OperationLog',
         component: () => import('@/views/OperationLog.vue'),
         meta: { title: '操作日志', icon: 'Document', roles: ['ADMIN'] }
+      },
+      {
+        path: 'backup',
+        name: 'Backup',
+        component: () => import('@/views/Backup.vue'),
+        meta: { title: '数据备份', icon: 'FolderOpened', roles: ['ADMIN'] }
       }
     ]
   },

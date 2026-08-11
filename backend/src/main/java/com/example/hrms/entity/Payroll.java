@@ -36,6 +36,8 @@ public class Payroll {
     /** GENERATED / PAID */
     private String status;
     private String remark;
+    private Long tenantId;
+
     @TableLogic
     private Integer deleted;
     @TableField(fill = FieldFill.INSERT)

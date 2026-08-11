@@ -33,6 +33,7 @@ public class DataInitializer implements CommandLineRunner {
     private final SalaryRuleMapper salaryRuleMapper;
     private final WorkflowProcessMapper workflowProcessMapper;
     private final TenantMapper tenantMapper;
+    private final NotificationMapper notificationMapper;
     private final PasswordEncoder passwordEncoder;
 
     @Override
@@ -43,6 +44,10 @@ public class DataInitializer implements CommandLineRunner {
         }
         System.out.println(">>> 首次启动，初始化演示数据...");
 
+        // 设置默认租户上下文（初始化数据属于默认租户）
+        TenantContext.setTenantId(1L);
+
+        try {
         // 0. 默认租户
         Tenant defaultTenant = new Tenant();
         defaultTenant.setTenantCode("DEFAULT");
@@ -154,7 +159,23 @@ public class DataInitializer implements CommandLineRunner {
         overtimeProcess.setStatus("ACTIVE");
         workflowProcessMapper.insert(overtimeProcess);
 
+        // 9. 欢迎消息通知
+        List<SysUser> allUsers = sysUserMapper.selectList(new LambdaQueryWrapper<>());
+        for (SysUser u : allUsers) {
+            Notification n = new Notification();
+            n.setUserId(u.getId());
+            n.setTitle("欢迎使用考勤薪资管理系统");
+            n.setContent("系统已初始化完成，您可以开始使用各项功能。如有问题请联系系统管理员。");
+            n.setType("SYSTEM");
+            n.setIsRead(0);
+            n.setCreateTime(LocalDateTime.now());
+            notificationMapper.insert(n);
+        }
+
         System.out.println(">>> 演示数据初始化完成。");
+        } finally {
+            TenantContext.clear();
+        }
     }
 
     private Department dept(String name, String remark) {

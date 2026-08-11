@@ -59,6 +59,32 @@
 
 ### 📝 更新日志
 
+#### v1.12.0 - 2026-08-11
+**租户数据隔离**
+- 🔒 基于 MyBatis-Plus TenantLineInnerInterceptor 实现自动租户隔离
+- 📊 所有业务表（员工/部门/考勤/请假/加班/薪资/工作流/日志/消息）增加 tenant_id 字段
+- 🎯 JWT 过滤器自动设置租户上下文，请求结束自动清除
+- 🚫 sys_user 和 tenant 表忽略租户隔离（登录和租户管理需要跨租户）
+- ✅ 不同租户的数据完全隔离，管理员也只能看到本租户数据
+
+#### v1.11.0 - 2026-08-11
+**数据备份功能**
+- 💾 新增数据备份页面（仅管理员可见）
+- 📦 使用 H2 BACKUP 命令安全备份数据库（运行时也可备份）
+- 📋 备份文件列表展示（文件名/大小/备份时间）
+- ⬇️ 支持下载备份文件（ZIP 格式）
+- 🗑️ 支持删除备份文件
+- 📁 备份文件保存在 backup 目录
+
+#### v1.10.0 - 2026-08-11
+**消息通知功能**
+- 🔔 新增消息通知中心页面
+- 📬 支持系统通知、审批通知、考勤通知、薪资通知四种类型
+- 🔴 顶部栏消息图标 + 未读数量徽章（每30秒自动刷新）
+- ✅ 点击消息标记已读，支持全部标记已读
+- 🔍 支持按未读/已读状态筛选
+- 🎨 渐变色消息图标，不同类型不同颜色
+
 #### v1.9.0 - 2026-08-11
 **操作日志功能**
 - 📋 新增操作日志页面（仅管理员可见）
@@ -389,6 +415,32 @@ attendance-salary-system/
 ---
 
 ### 📝 Changelog
+
+#### v1.12.0 - 2026-08-11
+**Tenant Data Isolation**
+- 🔒 Automatic tenant isolation based on MyBatis-Plus TenantLineInnerInterceptor
+- 📊 All business tables (employee/department/attendance/leave/overtime/payroll/workflow/log/notification) added tenant_id field
+- 🎯 JWT filter automatically sets tenant context, clears after request ends
+- 🚫 sys_user and tenant tables ignore tenant isolation (login and tenant management need cross-tenant access)
+- ✅ Data completely isolated between tenants, admins can only see their own tenant data
+
+#### v1.11.0 - 2026-08-11
+**Data Backup Feature**
+- 💾 New data backup page (admin only)
+- 📦 Secure database backup using H2 BACKUP command (works while running)
+- 📋 Backup file list display (filename/size/backup time)
+- ⬇️ Support downloading backup files (ZIP format)
+- 🗑️ Support deleting backup files
+- 📁 Backup files saved in backup directory
+
+#### v1.10.0 - 2026-08-11
+**Notification Feature**
+- 🔔 New notification center page
+- 📬 Supports 4 types: system, approval, attendance, payroll notifications
+- 🔴 Top bar notification icon + unread count badge (auto refresh every 30s)
+- ✅ Click message to mark as read, support mark all as read
+- 🔍 Support filtering by unread/read status
+- 🎨 Gradient notification icons, different colors for different types
 
 #### v1.9.0 - 2026-08-11
 **Operation Log Feature**

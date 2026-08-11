@@ -40,6 +40,7 @@ CREATE TABLE IF NOT EXISTS department (
     sort         INT          NOT NULL DEFAULT 0,       -- 排序
     status       VARCHAR(16)  NOT NULL DEFAULT '启用',   -- 启用 / 禁用
     remark       VARCHAR(255),
+    tenant_id    BIGINT       DEFAULT 1,
     deleted      INT          NOT NULL DEFAULT 0,
     create_time  TIMESTAMP    DEFAULT CURRENT_TIMESTAMP
 );
@@ -57,6 +58,7 @@ CREATE TABLE IF NOT EXISTS employee (
     base_salary    DECIMAL(12,2) NOT NULL DEFAULT 0,
     hire_date      DATE,
     status         VARCHAR(16)   NOT NULL DEFAULT '在职',    -- 在职 / 离职
+    tenant_id      BIGINT        DEFAULT 1,
     deleted        INT           NOT NULL DEFAULT 0,
     create_time    TIMESTAMP     DEFAULT CURRENT_TIMESTAMP
 );
@@ -71,6 +73,7 @@ CREATE TABLE IF NOT EXISTS attendance (
     status         VARCHAR(16)   NOT NULL DEFAULT 'NORMAL',  -- NORMAL 正常 / LATE 迟到 / EARLY 早退 / ABSENT 缺勤
     work_hours     DECIMAL(6,2)  DEFAULT 0,
     remark         VARCHAR(255),
+    tenant_id      BIGINT        DEFAULT 1,
     deleted        INT           NOT NULL DEFAULT 0,
     create_time    TIMESTAMP     DEFAULT CURRENT_TIMESTAMP
 );
@@ -86,6 +89,7 @@ CREATE TABLE IF NOT EXISTS leave_record (
     reason       VARCHAR(255),
     status       VARCHAR(16)   NOT NULL DEFAULT 'PENDING',   -- PENDING / APPROVED / REJECTED
     approver     VARCHAR(64),
+    tenant_id    BIGINT        DEFAULT 1,
     deleted      INT           NOT NULL DEFAULT 0,
     create_time  TIMESTAMP     DEFAULT CURRENT_TIMESTAMP
 );
@@ -98,6 +102,7 @@ CREATE TABLE IF NOT EXISTS overtime_record (
     hours         DECIMAL(6,1)  NOT NULL DEFAULT 0,
     reason        VARCHAR(255),
     status        VARCHAR(16)   NOT NULL DEFAULT 'PENDING',  -- PENDING / APPROVED / REJECTED
+    tenant_id     BIGINT        DEFAULT 1,
     deleted       INT           NOT NULL DEFAULT 0,
     create_time   TIMESTAMP     DEFAULT CURRENT_TIMESTAMP
 );
@@ -115,6 +120,7 @@ CREATE TABLE IF NOT EXISTS salary_rule (
     housing_fund_rate    DECIMAL(6,4)  NOT NULL DEFAULT 0.07,  -- 公积金个人缴纳比例（7%）
     tax_threshold        DECIMAL(12,2) NOT NULL DEFAULT 5000,  -- 个税起征点
     special_deduction    DECIMAL(12,2) NOT NULL DEFAULT 0,     -- 专项附加扣除默认值
+    tenant_id            BIGINT        DEFAULT 1,
     deleted              INT           NOT NULL DEFAULT 0,
     create_time          TIMESTAMP     DEFAULT CURRENT_TIMESTAMP
 );
@@ -139,6 +145,7 @@ CREATE TABLE IF NOT EXISTS payroll (
     net_salary           DECIMAL(12,2) NOT NULL DEFAULT 0,     -- 实发
     status               VARCHAR(16)   NOT NULL DEFAULT 'GENERATED', -- GENERATED / PAID
     remark               VARCHAR(255),
+    tenant_id            BIGINT        DEFAULT 1,
     deleted              INT           NOT NULL DEFAULT 0,
     create_time          TIMESTAMP     DEFAULT CURRENT_TIMESTAMP
 );
@@ -151,6 +158,7 @@ CREATE TABLE IF NOT EXISTS workflow_process (
     description     VARCHAR(255),
     nodes_config    TEXT,                              -- 审批节点配置（JSON）
     status          VARCHAR(16)   NOT NULL DEFAULT 'ACTIVE', -- ACTIVE / DISABLED
+    tenant_id       BIGINT        DEFAULT 1,
     deleted         INT           NOT NULL DEFAULT 0,
     create_time     TIMESTAMP     DEFAULT CURRENT_TIMESTAMP,
     update_time     TIMESTAMP     DEFAULT CURRENT_TIMESTAMP
@@ -171,6 +179,7 @@ CREATE TABLE IF NOT EXISTS workflow_instance (
     status          VARCHAR(16)   NOT NULL DEFAULT 'PENDING', -- PENDING / APPROVED / REJECTED / CANCELLED
     start_time      TIMESTAMP,
     end_time        TIMESTAMP,
+    tenant_id       BIGINT        DEFAULT 1,
     deleted         INT           NOT NULL DEFAULT 0,
     create_time     TIMESTAMP     DEFAULT CURRENT_TIMESTAMP
 );
@@ -187,6 +196,7 @@ CREATE TABLE IF NOT EXISTS workflow_task (
     status          VARCHAR(16)   NOT NULL DEFAULT 'PENDING', -- PENDING / APPROVED / REJECTED
     comment         VARCHAR(500),
     approve_time    TIMESTAMP,
+    tenant_id       BIGINT        DEFAULT 1,
     deleted         INT           NOT NULL DEFAULT 0,
     create_time     TIMESTAMP     DEFAULT CURRENT_TIMESTAMP
 );
@@ -206,5 +216,18 @@ CREATE TABLE IF NOT EXISTS operation_log (
     status          VARCHAR(16)   NOT NULL DEFAULT 'SUCCESS', -- SUCCESS / FAIL
     error_msg       VARCHAR(500),
     cost_time       BIGINT,
+    tenant_id       BIGINT        DEFAULT 1,
     operation_time  TIMESTAMP     DEFAULT CURRENT_TIMESTAMP
+);
+
+-- 消息通知表
+CREATE TABLE IF NOT EXISTS notification (
+    id           BIGINT        AUTO_INCREMENT PRIMARY KEY,
+    user_id      BIGINT        NOT NULL,
+    title        VARCHAR(128)  NOT NULL,
+    content      VARCHAR(500),
+    type         VARCHAR(32)   NOT NULL DEFAULT 'SYSTEM', -- SYSTEM / APPROVAL / ATTENDANCE / PAYROLL
+    is_read      INT           NOT NULL DEFAULT 0,        -- 0未读 1已读
+    tenant_id    BIGINT        DEFAULT 1,
+    create_time  TIMESTAMP     DEFAULT CURRENT_TIMESTAMP
 );

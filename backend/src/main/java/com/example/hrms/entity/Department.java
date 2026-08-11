@@ -21,6 +21,7 @@ public class Department {
     /** 状态：启用/禁用 */
     private String status;
     private String remark;
+    private Long tenantId;
     @TableLogic
     private Integer deleted;
     @TableField(fill = FieldFill.INSERT)

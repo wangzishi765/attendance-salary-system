@@ -1,5 +1,6 @@
 package com.example.hrms.security;
 
+import com.example.hrms.config.TenantContext;
 import io.jsonwebtoken.Claims;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -29,27 +30,41 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response,
                                     FilterChain filterChain) throws ServletException, IOException {
-        String header = request.getHeader("Authorization");
-        if (StringUtils.hasText(header) && header.startsWith("Bearer ")) {
-            String token = header.substring(7);
-            try {
-                if (jwtUtil.isValid(token)) {
-                    Claims claims = jwtUtil.parse(token);
-                    String username = claims.getSubject();
-                    if (SecurityContextHolder.getContext().getAuthentication() == null) {
-                        UserDetails userDetails = userDetailsService.loadUserByUsername(username);
-                        UsernamePasswordAuthenticationToken authentication =
-                                new UsernamePasswordAuthenticationToken(
-                                        userDetails, null, userDetails.getAuthorities());
-                        authentication.setDetails(
-                                new WebAuthenticationDetailsSource().buildDetails(request));
-                        SecurityContextHolder.getContext().setAuthentication(authentication);
+        try {
+            String header = request.getHeader("Authorization");
+            if (StringUtils.hasText(header) && header.startsWith("Bearer ")) {
+                String token = header.substring(7);
+                try {
+                    if (jwtUtil.isValid(token)) {
+                        Claims claims = jwtUtil.parse(token);
+                        String username = claims.getSubject();
+                        if (SecurityContextHolder.getContext().getAuthentication() == null) {
+                            UserDetails userDetails = userDetailsService.loadUserByUsername(username);
+                            UsernamePasswordAuthenticationToken authentication =
+                                    new UsernamePasswordAuthenticationToken(
+                                            userDetails, null, userDetails.getAuthorities());
+                            authentication.setDetails(
+                                    new WebAuthenticationDetailsSource().buildDetails(request));
+                            SecurityContextHolder.getContext().setAuthentication(authentication);
+
+                            // 设置租户上下文
+                            if (userDetails instanceof LoginUser) {
+                                LoginUser loginUser = (LoginUser) userDetails;
+                                if (loginUser.getSysUser() != null
+                                        && loginUser.getSysUser().getTenantId() != null) {
+                                    TenantContext.setTenantId(loginUser.getSysUser().getTenantId());
+                                }
+                            }
+                        }
                     }
+                } catch (Exception ignored) {
+                    // token 无效，放行给后续的匿名/拒绝处理
                 }
-            } catch (Exception ignored) {
-                // token 无效，放行给后续的匿名/拒绝处理
             }
+            filterChain.doFilter(request, response);
+        } finally {
+            // 请求结束后清除租户上下文
+            TenantContext.clear();
         }
-        filterChain.doFilter(request, response);
     }
 }

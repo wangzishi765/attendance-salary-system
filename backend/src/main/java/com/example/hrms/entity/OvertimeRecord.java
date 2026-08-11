@@ -21,6 +21,8 @@ public class OvertimeRecord {
     private String reason;
     /** PENDING / APPROVED / REJECTED */
     private String status;
+    private Long tenantId;
+
     @TableLogic
     private Integer deleted;
     @TableField(fill = FieldFill.INSERT)

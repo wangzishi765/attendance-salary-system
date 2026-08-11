@@ -93,3 +93,16 @@ export const deleteTenant = (id) => request.delete(`/api/tenants/${id}`)
 
 // ==================== 操作日志 ====================
 export const pageOperationLogs = (current, size, module, username, status) => request.get('/api/operation-logs', { params: { current, size, module, username, status } })
+
+// ==================== 消息通知 ====================
+export const getNotifications = (params) => request.get('/api/notifications', { params })
+export const getUnreadCount = () => request.get('/api/notifications/unread-count')
+export const getNotificationOverview = () => request.get('/api/notifications/overview')
+export const markNotificationRead = (id) => request.put(`/api/notifications/${id}/read`)
+export const markAllNotificationsRead = () => request.put('/api/notifications/read-all')
+
+// ==================== 数据备份 ====================
+export const createBackupApi = () => request.post('/api/backup/create')
+export const listBackups = () => request.get('/api/backup/list')
+export const deleteBackupApi = (name) => request.delete(`/api/backup/${name}`)
+export const downloadBackup = (name) => request.get(`/api/backup/download/${name}`, { responseType: 'blob' })

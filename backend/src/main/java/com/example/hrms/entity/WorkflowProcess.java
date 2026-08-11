@@ -23,6 +23,8 @@ public class WorkflowProcess {
     private String nodesConfig;
     /** 状态：ACTIVE / DISABLED */
     private String status;
+    private Long tenantId;
+
     @TableLogic
     private Integer deleted;
     @TableField(fill = FieldFill.INSERT)

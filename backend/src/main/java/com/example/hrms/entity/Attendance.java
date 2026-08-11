@@ -23,6 +23,8 @@ public class Attendance {
     private String status;
     private BigDecimal workHours;
     private String remark;
+    private Long tenantId;
+
     @TableLogic
     private Integer deleted;
     @TableField(fill = FieldFill.INSERT)

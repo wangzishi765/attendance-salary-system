@@ -38,5 +38,7 @@ public class OperationLog {
     /** 耗时（毫秒） */
     private Long costTime;
     /** 操作时间 */
+    private Long tenantId;
+
     private LocalDateTime operationTime;
 }

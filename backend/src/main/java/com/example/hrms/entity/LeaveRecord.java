@@ -25,6 +25,8 @@ public class LeaveRecord {
     /** PENDING / APPROVED / REJECTED */
     private String status;
     private String approver;
+    private Long tenantId;
+
     @TableLogic
     private Integer deleted;
     @TableField(fill = FieldFill.INSERT)

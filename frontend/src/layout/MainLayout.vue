@@ -33,6 +33,9 @@
           <el-tag :type="userStore.isAdmin ? 'danger' : (userStore.isHr ? 'warning' : 'success')" effect="light" round>
             {{ userStore.isAdmin ? '管理员' : (userStore.isHr ? '人事专员' : '普通员工') }}
           </el-tag>
+          <el-badge :value="unreadCount" :hidden="unreadCount === 0" class="notification-badge" :max="99">
+            <el-icon class="bell-icon" @click="goNotification"><Bell /></el-icon>
+          </el-badge>
           <el-dropdown @command="handleCommand">
             <span class="user-info">
               <el-avatar :size="32" style="background: linear-gradient(135deg, #667eea, #764ba2)">
@@ -88,18 +91,19 @@
 </template>
 
 <script setup>
-import { computed, ref, reactive } from 'vue'
+import { computed, ref, reactive, onMounted, onUnmounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { useUserStore } from '@/store/user'
-import { changePassword } from '@/api'
+import { changePassword, getUnreadCount } from '@/api'
 import {
   Coordinate,
   UserFilled,
   ArrowDown,
   Menu,
   Key,
-  SwitchButton
+  SwitchButton,
+  Bell
 } from '@element-plus/icons-vue'
 
 const route = useRoute()
@@ -114,6 +118,29 @@ const currentPageTitle = computed(() => {
 
 const pwdVisible = ref(false)
 const pwdForm = reactive({ oldPassword: '', newPassword: '', confirm: '' })
+
+const unreadCount = ref(0)
+let unreadTimer = null
+
+const loadUnread = async () => {
+  try {
+    const res = await getUnreadCount()
+    unreadCount.value = res.data || 0
+  } catch (e) {}
+}
+
+const goNotification = () => {
+  router.push('/notification')
+}
+
+onMounted(() => {
+  loadUnread()
+  unreadTimer = setInterval(loadUnread, 30000)
+})
+
+onUnmounted(() => {
+  if (unreadTimer) clearInterval(unreadTimer)
+})
 
 const menus = computed(() => {
   const layout = router.options.routes.find((r) => r.path === '/')
@@ -252,6 +279,17 @@ const handleCommand = (cmd) => {
 .user-name {
   font-size: 14px;
   font-weight: 500;
+}
+.notification-badge {
+  cursor: pointer;
+}
+.bell-icon {
+  font-size: 20px;
+  color: #666;
+  transition: color 0.3s;
+}
+.bell-icon:hover {
+  color: #667eea;
 }
 .main {
   background: linear-gradient(180deg, #f0f2f5 0%, #e8ecf1 100%);

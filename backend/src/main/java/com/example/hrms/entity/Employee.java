@@ -26,6 +26,7 @@ public class Employee {
     private LocalDate hireDate;
     /** 在职 / 离职 */
     private String status;
+    private Long tenantId;
     @TableLogic
     private Integer deleted;
     @TableField(fill = FieldFill.INSERT)

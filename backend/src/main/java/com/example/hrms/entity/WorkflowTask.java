@@ -31,6 +31,8 @@ public class WorkflowTask {
     private String comment;
     /** 审批时间 */
     private LocalDateTime approveTime;
+    private Long tenantId;
+
     @TableLogic
     private Integer deleted;
     @TableField(fill = FieldFill.INSERT)
