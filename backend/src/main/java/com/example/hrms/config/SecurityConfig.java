@@ -65,6 +65,10 @@ public class SecurityConfig {
                         .antMatchers("/api/auth/**").permitAll()
                         // H2 控制台放行
                         .antMatchers("/h2-console/**").permitAll()
+                        // Knife4j / Swagger API文档放行
+                        .antMatchers("/doc.html", "/webjars/**", "/v2/api-docs",
+                                "/v3/api-docs", "/swagger-resources/**",
+                                "/swagger-ui.html", "/swagger-ui/**").permitAll()
                         // 静态资源与前端页面放行
                         .antMatchers("/", "/index.html", "/favicon.ico",
                                 "/assets/**", "/static/**", "/*.js", "/*.css",

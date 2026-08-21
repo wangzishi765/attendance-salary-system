@@ -59,6 +59,15 @@
 
 ### 📝 更新日志
 
+#### v1.13.0 - 2026-08-21
+**企业级中间件升级**
+- 🚀 **Redis缓存**：仪表盘等热点数据缓存，未安装Redis时自动降级为本地缓存
+- 📨 **RabbitMQ消息队列**：工资单生成异步化，支持削峰填谷，未安装时自动降级为同步
+- ⏰ **XXL-Job分布式任务调度**：每月自动生成工资单、每周自动备份，未配置调度中心时使用Spring @Scheduled本地定时
+- 📖 **Knife4j API文档**：自动生成在线API文档，访问 http://localhost:8080/doc.html
+- 🔧 **优雅降级**：所有中间件均支持未安装时自动降级，保证系统开箱即用
+- 🐳 **Docker Compose增强**：新增middleware profile，一键启动Redis+RabbitMQ
+
 #### v1.12.0 - 2026-08-11
 **租户数据隔离**
 - 🔒 基于 MyBatis-Plus TenantLineInnerInterceptor 实现自动租户隔离
@@ -196,7 +205,10 @@
 ### 🧰 技术栈
 
 **后端**：Spring Boot 2.7 · Spring Security + JWT · MyBatis-Plus · H2 / MySQL 8 · Apache POI · Java 8
+**企业级中间件**：Redis（缓存）· RabbitMQ（消息队列）· XXL-Job（任务调度）· Knife4j（API文档）
 **前端**：Vue 3 · Vite 5 · Element Plus · Vue Router · Pinia · Axios · ECharts 5
+
+> 💡 **优雅降级设计**：Redis/RabbitMQ/XXL-Job 均支持未安装时自动降级，系统开箱即用，无需额外配置。
 
 ---
 
@@ -239,6 +251,10 @@ docker compose up -d --build
 
 # 如需使用 MySQL：
 SPRING_PROFILES_ACTIVE=mysql docker compose --profile mysql up -d --build
+
+# 启用企业级中间件（Redis + RabbitMQ）：
+docker compose --profile middleware up -d --build
+# RabbitMQ管理界面: http://localhost:15672 (guest/guest)
 ```
 
 ---

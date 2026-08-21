@@ -24,6 +24,38 @@ spring:
     time-zone: Asia/Shanghai
     default-property-inclusion: non_null
 
+  # ========== Redis 配置（热点数据缓存 + Token管理） ==========
+  # 未安装Redis时自动降级为本地缓存，不影响系统运行
+  redis:
+    host: ${REDIS_HOST:localhost}
+    port: ${REDIS_PORT:6379}
+    password: ${REDIS_PASSWORD:}
+    database: 0
+    timeout: 2000ms
+    lettuce:
+      pool:
+        max-active: 8
+        max-idle: 8
+        min-idle: 0
+        max-wait: -1ms
+
+  # ========== RabbitMQ 配置（异步消息队列） ==========
+  # 未安装RabbitMQ时自动降级为同步调用，不影响系统运行
+  rabbitmq:
+    host: ${RABBITMQ_HOST:localhost}
+    port: ${RABBITMQ_PORT:5672}
+    username: ${RABBITMQ_USER:guest}
+    password: ${RABBITMQ_PASSWORD:guest}
+    virtual-host: /
+    # 消费者不自动启动，避免未安装MQ时启动失败
+    listener:
+      simple:
+        auto-startup: false
+        acknowledge-mode: manual
+    # 生产者确认
+    publisher-confirm-type: correlated
+    publisher-returns: true
+
 # MyBatis-Plus 配置
 mybatis-plus:
   configuration:
@@ -42,6 +74,48 @@ app:
     secret: ${APP_JWT_SECRET:hrms-please-change-this-secret-key-to-a-long-random-string-2026}
     # token 有效期（毫秒），默认 24 小时
     expire-millis: 86400000
+
+# ========== XXL-Job 分布式任务调度配置 ==========
+# 默认不启用（admin-addresses为空），启动XXL-Job调度中心后填写地址即可使用
+# 调度中心下载：https://www.xuxueli.com/xxl-job/
+xxl:
+  job:
+    admin:
+      # 调度中心地址，多个用逗号分隔，为空则不启用
+      addresses: ${XXL_JOB_ADMIN_ADDRESSES:}
+    executor:
+      appname: hrms-executor
+      address:
+      ip:
+      port: 9999
+      logpath: ./logs/xxl-job/jobhandler
+      logretentiondays: 30
+
+# ========== Knife4j API文档配置 ==========
+# 访问地址：http://localhost:8080/doc.html
+knife4j:
+  enable: true
+  setting:
+    language: zh_cn
+    enable-version: true
+    enable-search: true
+    enable-home-custom: true
+    home-custom-path: classpath:markdown/home.md
+  production: false
+
+# ========== 企业级功能开关 ==========
+hrms:
+  # Redis缓存开关（关闭后使用本地ConcurrentHashMap缓存）
+  cache:
+    enabled: true
+    # 缓存默认过期时间（秒）
+    default-ttl: 300
+  # RabbitMQ异步开关（关闭后使用同步调用）
+  mq:
+    enabled: false
+  # 定时任务开关（使用Spring @Scheduled，不依赖XXL-Job）
+  schedule:
+    enabled: true
 
 # ============== 默认 profile: H2 ==============
 ---

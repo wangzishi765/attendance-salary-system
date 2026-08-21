@@ -4,6 +4,10 @@
 #     docker compose up -d
 #   使用 MySQL：启用 mysql profile
 #     docker compose --profile mysql up -d
+#   启用企业级中间件（Redis + RabbitMQ）：
+#     docker compose --profile middleware up -d
+#   全部启用：
+#     docker compose --profile mysql --profile middleware up -d
 # =============================================================
 services:
   app:
@@ -20,9 +24,29 @@ services:
       MYSQL_DB: hrms
       MYSQL_USER: root
       MYSQL_PASSWORD: root123
+      # Redis 配置（启用 middleware profile 时生效）
+      REDIS_HOST: redis
+      REDIS_PORT: "6379"
+      # RabbitMQ 配置（启用 middleware profile 时生效）
+      RABBITMQ_HOST: rabbitmq
+      RABBITMQ_PORT: "5672"
+      RABBITMQ_USER: guest
+      RABBITMQ_PASSWORD: guest
+      # 启用 MQ 异步
+      HRMS_MQ_ENABLED: "true"
     volumes:
       # 持久化 H2 数据文件
       - hrms-data:/app/data
+    depends_on:
+      mysql:
+        condition: service_started
+        required: false
+      redis:
+        condition: service_started
+        required: false
+      rabbitmq:
+        condition: service_started
+        required: false
     restart: unless-stopped
 
   mysql:
@@ -38,6 +62,35 @@ services:
       - hrms-mysql:/var/lib/mysql
     restart: unless-stopped
 
+  # ========== 企业级中间件 ==========
+
+  redis:
+    image: redis:7-alpine
+    container_name: hrms-redis
+    profiles: ["middleware"]
+    ports:
+      - "6379:6379"
+    volumes:
+      - hrms-redis:/data
+    command: redis-server --appendonly yes
+    restart: unless-stopped
+
+  rabbitmq:
+    image: rabbitmq:3-management-alpine
+    container_name: hrms-rabbitmq
+    profiles: ["middleware"]
+    ports:
+      - "5672:5672"    # AMQP 端口
+      - "15672:15672"  # 管理界面端口
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+    volumes:
+      - hrms-rabbitmq:/var/lib/rabbitmq
+    restart: unless-stopped
+
 volumes:
   hrms-data:
   hrms-mysql:
+  hrms-redis:
+  hrms-rabbitmq:

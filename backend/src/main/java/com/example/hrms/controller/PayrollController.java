@@ -2,9 +2,14 @@ package com.example.hrms.controller;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.example.hrms.common.Result;
+import com.example.hrms.config.TenantContext;
 import com.example.hrms.entity.Payroll;
+import com.example.hrms.mq.PayrollMessage;
 import com.example.hrms.security.SecurityUtil;
+import com.example.hrms.service.MessageQueueService;
 import com.example.hrms.service.PayrollService;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
 import lombok.RequiredArgsConstructor;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
@@ -19,20 +24,44 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+@Api(tags = "工资单管理")
 @RestController
 @RequestMapping("/api/payrolls")
 @RequiredArgsConstructor
 public class PayrollController {
 
     private final PayrollService payrollService;
+    private final MessageQueueService messageQueueService;
 
-    /** 生成/重算某月工资单 */
+    /**
+     * 生成/重算某月工资单
+     * 当MQ启用时异步生成，否则同步生成
+     */
+    @ApiOperation("生成某月工资单")
     @PostMapping("/generate")
     @PreAuthorize("hasAnyRole('ADMIN', 'HR')")
     public Result<Map<String, Object>> generate(@RequestParam String month) {
-        int count = payrollService.generateMonth(month);
         Map<String, Object> map = new HashMap<>();
         map.put("month", month);
+
+        // 尝试异步生成
+        PayrollMessage message = new PayrollMessage(
+                month,
+                SecurityUtil.getCurrentUser().getId(),
+                SecurityUtil.getCurrentUser().getRealName(),
+                TenantContext.getTenantId(),
+                System.currentTimeMillis()
+        );
+
+        if (messageQueueService.sendPayrollGenerate(message)) {
+            // 异步生成成功
+            map.put("async", true);
+            return Result.success("工资单生成任务已提交，将在后台异步处理", map);
+        }
+
+        // MQ不可用，降级为同步生成
+        int count = payrollService.generateMonth(month);
+        map.put("async", false);
         map.put("count", count);
         return Result.success("已生成 " + count + " 条工资单", map);
     }
